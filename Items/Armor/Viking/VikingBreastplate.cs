@@ -20,8 +20,8 @@ namespace DasherClass.Items.Armor.Viking
 
         public override void UpdateEquip(Player player)
         {
-            player.GetDamage<ThrowingDamageClass>() += 0.06f;
-            player.GetCritChance<ThrowingDamageClass>() += 4;
+            player.GetDamage<DasherDamageClass>() += 0.06f;
+            player.GetCritChance<DasherDamageClass>() += 4;
         }
 
         public override void AddRecipes()
