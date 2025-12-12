@@ -26,7 +26,7 @@ namespace DasherClass.Items.Armor.Viking
         public override void UpdateArmorSet(Player player)
         {
             player.setBonus = this.GetLocalizedValue("SetBonus");
-            player.GetDamage<DasherDamageClass>() += 1f;
+            player.GetDamage<DasherDamageClass>() += 0.1f;
         }
 
         public override void UpdateEquip(Player player)
