@@ -1,0 +1,15 @@
+VikingBreastplate: {
+	DisplayName: Viking Breastplate
+	Tooltip: Increase dashing damage by 3%
+}
+
+VikingHelmet: {
+	DisplayName: Viking Helmet
+	Tooltip: Increase dashing damage by 3%
+	SetBonus: Increase dashing damage by 10%
+}
+
+VikingLeggings: {
+	DisplayName: Viking Leggings
+	Tooltip: Increase dashing damage by 3%
+}

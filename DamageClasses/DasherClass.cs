@@ -10,9 +10,6 @@ namespace DasherClass
 
         public override void Load() => Instance = this;
         public override void Unload() => Instance = null;
-
-        public override LocalizedText DisplayName => Language.GetText("Dasher ");
-
     }
 
     

@@ -4,12 +4,9 @@ using Terraria.ModLoader;
 
 namespace DasherClass.Items.Weapons
 { 
-	// This is a basic item template.
-	// Please see tModLoader's ExampleMod for every other example:
-	// https://github.com/tModLoader/tModLoader/tree/stable/ExampleMod
-	public class BlouisSword : ModItem
+	public class BlouisSword : ModItem, ILocalizedModType
 	{
-		// The Display Name and Tooltip of this item can be edited in the 'Localization/en-US_Mods.DasherClass.hjson' file.
+		public new string LocalizationCategory => "Items.Weapons";
 		public override void SetDefaults()
 		{
 			Item.damage = 50;
@@ -18,7 +15,7 @@ namespace DasherClass.Items.Weapons
 			Item.height = 40;
 			Item.useTime = 20;
 			Item.useAnimation = 20;
-			Item.useStyle = ItemUseStyleID.Swing;
+			Item.useStyle = ItemUseStyleID.HoldUp;
 			Item.knockBack = 6;
 			Item.value = Item.buyPrice(silver: 1);
 			Item.rare = ItemRarityID.Blue;
