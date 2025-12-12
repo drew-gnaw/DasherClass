@@ -1,8 +1,17 @@
 # This file will automatically update with entries for new content after a build and reload.
 
 Items: {
-	BlouisSword: {
-		DisplayName: Blouis Sword
-		Tooltip: Ohhh I'm blooming
+	Accessories: {
+		DasherEmblem: {
+			DisplayName: Dasher Emblem
+			Tooltip: 15% increased dash damage
+		}
+	}
+
+	Weapons: {
+		BlouisSword: {
+			DisplayName: Blouis Sword
+			Tooltip: Ohhh I'm blooming
+		}
 	}
 }

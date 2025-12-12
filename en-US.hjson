@@ -5,6 +5,13 @@ Mods: {
 				Tooltip: ""
 				DisplayName: Blouis Sword
 			}
+
+			Accessories: {
+				DasherEmblem: {
+					DisplayName: Dasher Emblem
+					Tooltip: ""
+				}
+			}
 		}
 	}
 }
