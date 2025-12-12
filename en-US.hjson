@@ -12,6 +12,32 @@ Mods: {
 					Tooltip: ""
 				}
 			}
+
+			Armor: {
+				PreHardmode: {
+					VikingBreastplate: {
+						DisplayName: Viking Breastplate
+						Tooltip: ""
+					}
+
+					VikingHelmet: {
+						DisplayName: Viking Helmet
+						Tooltip: ""
+					}
+
+					VikingLeggings: {
+						DisplayName: Viking Leggings
+						Tooltip: ""
+					}
+				}
+			}
+
+			Materials: {
+				VikingPlating: {
+					DisplayName: Viking Plating
+					Tooltip: ""
+				}
+			}
 		}
 	}
 }
