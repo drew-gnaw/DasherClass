@@ -1,0 +1,3 @@
+displayName = Dasher Class
+author = Awowa, Chonker
+version = 0.1
