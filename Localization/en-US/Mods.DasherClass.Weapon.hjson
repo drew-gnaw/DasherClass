@@ -3,11 +3,6 @@
 Items: {
 	BlouisSword: {
 		DisplayName: Blouis Sword
-		Tooltip:
-			'''
-			Template of an item
-			Replacing this tooltip is duty 
-			It's snowing on Mt.Fuji
-			'''
+		Tooltip: Ohhh I'm blooming
 	}
 }

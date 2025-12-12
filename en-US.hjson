@@ -1,0 +1,10 @@
+Mods: {
+	DasherClass: {
+		Items: {
+			BlouisSword: {
+				Tooltip: ""
+				DisplayName: Blouis Sword
+			}
+		}
+	}
+}
