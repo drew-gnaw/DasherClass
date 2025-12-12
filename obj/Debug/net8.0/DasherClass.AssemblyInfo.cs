@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DasherClass")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+394b39d159f7a7d7869f99d0c8364bcb35a3b704")]
 [assembly: System.Reflection.AssemblyProductAttribute("DasherClass")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DasherClass")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -2,7 +2,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace DasherClass.Content.Items
+namespace DasherClass.Items
 { 
 	// This is a basic item template.
 	// Please see tModLoader's ExampleMod for every other example:
@@ -13,7 +13,7 @@ namespace DasherClass.Content.Items
 		public override void SetDefaults()
 		{
 			Item.damage = 50;
-			Item.DamageType = DamageClass.Melee;
+			Item.DamageType = DasherDamageClass.Instance;
 			Item.width = 40;
 			Item.height = 40;
 			Item.useTime = 20;
@@ -33,5 +33,6 @@ namespace DasherClass.Content.Items
 			recipe.AddTile(TileID.WorkBenches);
 			recipe.Register();
 		}
+
 	}
 }
