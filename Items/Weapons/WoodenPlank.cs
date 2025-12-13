@@ -23,7 +23,7 @@ namespace DasherClass.Items.Weapons
             Item.useAnimation = Item.useTime = 40;
             Item.useTurn = true;
             Item.useStyle = ItemUseStyleID.Swing;
-            Item.knockBack = 9f;
+            Item.knockBack = 3f;
             Item.UseSound = SoundID.Item1;
             Item.autoReuse = true;
             Item.value = Item.buyPrice(gold: 10);

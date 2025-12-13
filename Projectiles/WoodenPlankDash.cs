@@ -1,8 +1,9 @@
-﻿using DasherClass.Items.Weapons;
+﻿﻿using DasherClass.Items.Weapons;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ModLoader;
+using Terraria.ID;
 
 namespace DasherClass.Projectiles
 {
@@ -27,6 +28,11 @@ namespace DasherClass.Projectiles
         public ref float Time => ref Projectile.ai[1];
 
         public const float LungeSpeed = 9f;
+        public const float ChargeTime = 50f;
+        public float currentTime = 0f;
+
+        // Stored player movement stats so we can restore them after charging.
+        private float originalMoveSpeed = -1f;
         public override void SetStaticDefaults()
         {
             Main.projFrames[Projectile.type] = 14;
@@ -34,8 +40,8 @@ namespace DasherClass.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.scale = 1.6f;
-            Projectile.width = Projectile.height = (int)(Projectile.scale * 60);
+            Projectile.scale = 1.2f;
+            Projectile.width = Projectile.height = (int)(Projectile.scale * 30);
             Projectile.friendly = true;
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;
@@ -49,16 +55,81 @@ namespace DasherClass.Projectiles
         #region AI
         public override void AI()
         {
-            if (!HasPerformedLunge)
-                PerformLunge();
 
-            Vector2 topLeft = Projectile.Center + Projectile.velocity.RotatedBy(-MathHelper.PiOver2) * 40f;
-            Vector2 topRight = Projectile.Center + Projectile.velocity.RotatedBy(MathHelper.PiOver2) * 40f;
-            if (Time >= 8f && !Collision.CanHitLine(topLeft, 8, 8, topRight, 8, 8))
-                ReelBack();
-            HandleProjectileVisuals();
-            HandlePositioning();
-            Time++;
+            if (Owner.controlUseItem)
+            {
+                Time++;
+                currentTime++;
+                // Save original values the first time we start charging.
+                if (originalMoveSpeed < 0f)
+                {
+                    originalMoveSpeed = Owner.moveSpeed;
+                }
+
+                // Reduce movement while charging. Adjust multipliers as desired.
+                Owner.moveSpeed = originalMoveSpeed - 0.4f;
+                if (currentTime >= ChargeTime) 
+                {
+                    GenerateDustOnOwnerHand(Owner);
+                }
+            } else
+            {
+                // Restore original movement values when not charging.
+                if (originalMoveSpeed >= 0f)
+                {
+                    Owner.moveSpeed = originalMoveSpeed;
+                    originalMoveSpeed = -1f;
+                }
+
+                if (currentTime >= ChargeTime) 
+                {
+                    if (!HasPerformedLunge)
+                        PerformLunge();
+
+                    // Vector2 topLeft = Projectile.Center + Projectile.velocity.RotatedBy(-MathHelper.PiOver2) * 20f;
+                    // Vector2 topRight = Projectile.Center + Projectile.velocity.RotatedBy(MathHelper.PiOver2) * 20f;
+                    // if (Time >= 8f && !Collision.CanHitLine(topLeft, 8, 8, topRight, 8, 8))
+                    //     ReelBack();
+                    HandleProjectileVisuals();
+                    HandlePositioning();
+                    Time++;
+                    currentTime = 0f;
+                }    
+                Time++;  
+                currentTime = 0f;
+            }
+        }
+
+        internal static void GenerateDustOnOwnerHand(Player player)
+        {
+            if (Main.dedServ)
+                return;
+
+            Vector2 handOffset = Main.OffsetsPlayerOnhand[player.bodyFrame.Y / 56] * 2f;
+            if (player.direction != 1)
+                handOffset.X = player.bodyFrame.Width - handOffset.X;
+            if (player.gravDir != 1f)
+                handOffset.Y = player.bodyFrame.Height - handOffset.Y;
+
+            handOffset -= new Vector2(player.bodyFrame.Width - player.width, player.bodyFrame.Height - player.height) / 2f;
+            Vector2 rotatedHandPosition = player.RotatedRelativePoint(player.position + handOffset, true);
+            for (int i = 0; i < 4; i++)
+            {
+                if (i == 0)
+                {
+                    Dust dust = Dust.NewDustDirect(player.Center, 0, 0, DustID.Electric, 0f, 0f, 150, default, 1.0f);
+                    dust.position = rotatedHandPosition;
+                    dust.velocity = Vector2.Zero;
+                    dust.noGravity = true;
+                    dust.fadeIn = 1f;
+                    dust.velocity += player.velocity;
+                    if (Main.rand.NextBool())
+                    {
+                        dust.position += Utils.RandomVector2(Main.rand, -4f, 4f);
+                        dust.scale += Main.rand.NextFloat() * 0.5f;
+                    }
+                }
+            }
         }
 
         internal void PerformLunge()

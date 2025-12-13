@@ -21,6 +21,11 @@ namespace DasherClass.Items.Weapons
 			Item.rare = ItemRarityID.Blue;
 			Item.UseSound = SoundID.Item1;
 			Item.autoReuse = true;
+			// Allow holding the use button to charge. We'll spawn the projectile on release from a ModPlayer.
+			Item.channel = true;
+			// Prevent the swing graphic while charging and prevent the item from dealing melee during charge.
+			Item.noUseGraphic = true;
+			Item.noMelee = true;
 		}
 
 		public override void AddRecipes()
