@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ID;
+using System;
+using Microsoft.Build.Evaluation;
+using System.Threading;
 
 namespace DasherClass.Projectiles
 {
@@ -27,12 +30,13 @@ namespace DasherClass.Projectiles
 
         public ref float Time => ref Projectile.ai[1];
 
-        public const float LungeSpeed = 9f;
-        public const float ChargeTime = 50f;
+        public const float LungeSpeed = 10f;
+        public const float ChargeTime = 150f;
+        public bool isMidlunge = false;
         public float currentTime = 0f;
 
-        // Stored player movement stats so we can restore them after charging.
-        private float originalMoveSpeed = -1f;
+        // Direction captured at the moment the charge ends (player release).
+        private Vector2 releaseAimDirection = Vector2.Zero;
         public override void SetStaticDefaults()
         {
             Main.projFrames[Projectile.type] = 14;
@@ -55,80 +59,77 @@ namespace DasherClass.Projectiles
         #region AI
         public override void AI()
         {
-
-            if (Owner.controlUseItem)
+            if (isMidlunge)
             {
-                Time++;
-                currentTime++;
-                // Save original values the first time we start charging.
-                if (originalMoveSpeed < 0f)
-                {
-                    originalMoveSpeed = Owner.moveSpeed;
-                }
-
-                // Reduce movement while charging. Adjust multipliers as desired.
-                Owner.moveSpeed = originalMoveSpeed - 0.4f;
+                Projectile.friendly = true;
+                HandleProjectileVisuals();
+                HandlePositioning();
+            } else if (Owner.controlUseItem)
+            {
                 if (currentTime >= ChargeTime) 
                 {
-                    GenerateDustOnOwnerHand(Owner);
+                    GenerateChargedParticle(Owner);
+                } else
+                {
+                    GenerateChargingParticles(Owner, currentTime);
                 }
+                currentTime++;
+                Projectile.friendly = false;
+                HandleChargingProjectileVisuals();
+                HandleChargingPositioning();
             } else
             {
-                // Restore original movement values when not charging.
-                if (originalMoveSpeed >= 0f)
-                {
-                    Owner.moveSpeed = originalMoveSpeed;
-                    originalMoveSpeed = -1f;
-                }
-
                 if (currentTime >= ChargeTime) 
                 {
+                    isMidlunge = true;
                     if (!HasPerformedLunge)
+                    {
+                        // Capture aim direction at release on the owning client.
+                        if (Projectile.owner == Main.myPlayer)
+                        {
+                            releaseAimDirection = (Main.MouseWorld - Owner.Center).SafeNormalize(Vector2.UnitX * Owner.direction);
+                        }
                         PerformLunge();
-
-                    // Vector2 topLeft = Projectile.Center + Projectile.velocity.RotatedBy(-MathHelper.PiOver2) * 20f;
-                    // Vector2 topRight = Projectile.Center + Projectile.velocity.RotatedBy(MathHelper.PiOver2) * 20f;
-                    // if (Time >= 8f && !Collision.CanHitLine(topLeft, 8, 8, topRight, 8, 8))
-                    //     ReelBack();
-                    HandleProjectileVisuals();
-                    HandlePositioning();
-                    Time++;
-                    currentTime = 0f;
-                }    
-                Time++;  
+                    }
+                }
                 currentTime = 0f;
             }
         }
 
-        internal static void GenerateDustOnOwnerHand(Player player)
+        internal static void GenerateChargingParticles(Player player, float time)
         {
             if (Main.dedServ)
                 return;
 
-            Vector2 handOffset = Main.OffsetsPlayerOnhand[player.bodyFrame.Y / 56] * 2f;
-            if (player.direction != 1)
-                handOffset.X = player.bodyFrame.Width - handOffset.X;
-            if (player.gravDir != 1f)
-                handOffset.Y = player.bodyFrame.Height - handOffset.Y;
-
-            handOffset -= new Vector2(player.bodyFrame.Width - player.width, player.bodyFrame.Height - player.height) / 2f;
-            Vector2 rotatedHandPosition = player.RotatedRelativePoint(player.position + handOffset, true);
-            for (int i = 0; i < 4; i++)
+            int amountGenerated = (int) time / 20;
+            for (int i = 0; i < amountGenerated; i++)
             {
-                if (i == 0)
-                {
-                    Dust dust = Dust.NewDustDirect(player.Center, 0, 0, DustID.Electric, 0f, 0f, 150, default, 1.0f);
-                    dust.position = rotatedHandPosition;
-                    dust.velocity = Vector2.Zero;
-                    dust.noGravity = true;
-                    dust.fadeIn = 1f;
-                    dust.velocity += player.velocity;
-                    if (Main.rand.NextBool())
-                    {
-                        dust.position += Utils.RandomVector2(Main.rand, -4f, 4f);
-                        dust.scale += Main.rand.NextFloat() * 0.5f;
-                    }
-                }
+                Dust dust = Dust.NewDustDirect(player.position + new Vector2(-4, 0), player.width + 15, player.height + 15, DustID.GemRuby, 0f, 0f, 100, default, 0.45f + Main.rand.NextFloat() * 0.35f);
+                dust.noGravity = true;
+                dust.fadeIn = 1f;
+
+                // Pull toward player center; strength scales with distance and charge progress.
+                Vector2 toCenter = player.Center - dust.position;
+                float pullFactor = 0.01f; // adjust for stronger/weaker pull
+                dust.velocity = toCenter * pullFactor + player.velocity * 0.2f;
+            }
+        }
+
+        internal static void GenerateChargedParticle(Player player)
+        {
+            if (Main.dedServ)
+                return;
+            // Spawn a burst of charged particles that push outward from the player.
+            for (int i = 0; i < 3; i++)
+            {
+                Dust dust = Dust.NewDustDirect(player.position + new Vector2(-4, 0), player.width + 3, player.height + 3, DustID.GemEmerald, 0f, 0f, 100, default, 0.45f + Main.rand.NextFloat() * 0.35f);
+                dust.noGravity = true;
+                dust.fadeIn = 1f;
+
+                // Push away from the player's center; add a small random spread and inherit some player velocity.
+                Vector2 fromCenter = dust.position - player.Center;
+                float pushFactor = 0.03f + Main.rand.NextFloat() * 0.06f;
+                dust.velocity = fromCenter * pushFactor + player.velocity * 0.25f + Utils.RandomVector2(Main.rand, -0.5f, 0.5f);
             }
         }
 
@@ -136,7 +137,14 @@ namespace DasherClass.Projectiles
         {
             if (Main.myPlayer != Projectile.owner)
                 return;
-            Owner.velocity = Projectile.velocity.SafeNormalize(Vector2.UnitX * Owner.direction) * LungeSpeed;
+               
+            Owner.GiveUniversalIFrames(WoodenPlank.OnHitIFrames);
+
+            Vector2 aim = releaseAimDirection;
+            if (aim == Vector2.Zero)
+                aim = Projectile.velocity.SafeNormalize(Vector2.UnitX * Owner.direction);
+
+            Owner.velocity = aim * LungeSpeed;
             HasPerformedLunge = true;
         }
 
@@ -155,9 +163,31 @@ namespace DasherClass.Projectiles
             Projectile.Kill();
         }
 
+        internal void HandleChargingProjectileVisuals()
+        {
+            float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
+            Projectile.rotation = velocityAngle + MathHelper.Pi;
+            Projectile.frameCounter++;
+            if (Projectile.frameCounter % 5 == 4)
+            {
+                Projectile.frame++;
+                if (Projectile.frame >= Main.projFrames[Projectile.type])
+                {
+                    Projectile.frame = 0;
+                }
+            }
+        }
+
+        internal void HandleChargingPositioning()
+        {
+            Projectile.Center = Owner.RotatedRelativePoint(Owner.MountedCenter);
+            Vector2 aimDirection = (Main.MouseWorld - Owner.Center).SafeNormalize(Vector2.UnitX * Owner.direction);
+            Projectile.Center += aimDirection * 30f;
+        }
+
         internal void HandleProjectileVisuals()
         {
-            float velocityAngle = Projectile.velocity.ToRotation();
+            float velocityAngle = releaseAimDirection.ToRotation();
             Projectile.rotation = velocityAngle + MathHelper.Pi;
             Projectile.frameCounter++;
             if (Projectile.frameCounter % 3 == 2)
@@ -166,14 +196,18 @@ namespace DasherClass.Projectiles
 
                 // Die at the end of the final punch.
                 if (Projectile.frame >= Main.projFrames[Projectile.type])
+                {
+                    releaseAimDirection = Vector2.Zero;
+                    isMidlunge = false;
                     Projectile.Kill();
+                }
             }
         }
 
         internal void HandlePositioning()
         {
             Projectile.Center = Owner.RotatedRelativePoint(Owner.MountedCenter);
-            Projectile.Center += Projectile.velocity.SafeNormalize(Vector2.UnitX * Owner.direction) * 30f;
+            Projectile.Center += releaseAimDirection.SafeNormalize(Vector2.UnitX * Owner.direction) * 30f;
         }
         #endregion
 
