@@ -31,9 +31,13 @@ namespace DasherClass.Projectiles
         public ref float Time => ref Projectile.ai[1];
 
         public const float LungeSpeed = 10f;
-        public const float ChargeTime = 150f;
+        public const float ChargeTime = 50f;
+        public const float DashTime = 30f;
+        public const float pullBackScale = 0.995f;
+        public float pullBackRate = 1f;
         public bool isMidlunge = false;
-        public float currentTime = 0f;
+        public float currentChargeTime = 0f;
+        public float currentDashTime = 0f;
 
         // Direction captured at the moment the charge ends (player release).
         private Vector2 releaseAimDirection = Vector2.Zero;
@@ -66,22 +70,24 @@ namespace DasherClass.Projectiles
                 HandlePositioning();
             } else if (Owner.controlUseItem)
             {
-                if (currentTime >= ChargeTime) 
+                if (currentChargeTime >= ChargeTime) 
                 {
                     GenerateChargedParticle(Owner);
                 } else
                 {
-                    GenerateChargingParticles(Owner, currentTime);
+                    GenerateChargingParticles(Owner, currentChargeTime);
                 }
-                currentTime++;
+                currentChargeTime++;
                 Projectile.friendly = false;
+                pullBackRate = pullBackRate > 0.85? pullBackRate * pullBackScale : 0.85f;
                 HandleChargingProjectileVisuals();
-                HandleChargingPositioning();
+                HandleChargingPositioning(pullBackRate);
             } else
             {
-                if (currentTime >= ChargeTime) 
+                if (currentChargeTime >= ChargeTime) 
                 {
                     isMidlunge = true;
+                    pullBackRate = 1f;
                     if (!HasPerformedLunge)
                     {
                         // Capture aim direction at release on the owning client.
@@ -91,8 +97,10 @@ namespace DasherClass.Projectiles
                         }
                         PerformLunge();
                     }
+                } else
+                {
+                    Projectile.Kill();
                 }
-                currentTime = 0f;
             }
         }
 
@@ -167,48 +175,55 @@ namespace DasherClass.Projectiles
         {
             float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
             Projectile.rotation = velocityAngle + MathHelper.Pi;
-            Projectile.frameCounter++;
-            if (Projectile.frameCounter % 5 == 4)
-            {
-                Projectile.frame++;
-                if (Projectile.frame >= Main.projFrames[Projectile.type])
-                {
-                    Projectile.frame = 0;
-                }
-            }
         }
 
-        internal void HandleChargingPositioning()
+        internal void HandleChargingPositioning(float pullBackScale)
         {
             Projectile.Center = Owner.RotatedRelativePoint(Owner.MountedCenter);
             Vector2 aimDirection = (Main.MouseWorld - Owner.Center).SafeNormalize(Vector2.UnitX * Owner.direction);
-            Projectile.Center += aimDirection * 30f;
+            if (aimDirection == Vector2.Zero)
+                aimDirection = Vector2.UnitX * Owner.direction;
+
+            float minRadius = 15f;
+            float maxRadius = 35f;
+            float t = Math.Abs(aimDirection.Y);
+            float radius = MathHelper.Lerp(minRadius, maxRadius, t) * pullBackScale;
+            Projectile.Center += aimDirection * radius;
+            Projectile.direction = aimDirection.X >= 0f ? 1 : -1;
+            Owner.ChangeDir(Projectile.direction);
         }
 
         internal void HandleProjectileVisuals()
         {
             float velocityAngle = releaseAimDirection.ToRotation();
             Projectile.rotation = velocityAngle + MathHelper.Pi;
-            Projectile.frameCounter++;
-            if (Projectile.frameCounter % 3 == 2)
+            if (currentDashTime < DashTime)
             {
-                Projectile.frame++;
-
-                // Die at the end of the final punch.
-                if (Projectile.frame >= Main.projFrames[Projectile.type])
-                {
-                    releaseAimDirection = Vector2.Zero;
-                    isMidlunge = false;
-                    Projectile.Kill();
-                }
+                currentDashTime++;
+            }
+            else
+            {
+                releaseAimDirection = Vector2.Zero;
+                currentDashTime = 0f;
+                isMidlunge = false;
+                Projectile.Kill();
             }
         }
 
         internal void HandlePositioning()
         {
             Projectile.Center = Owner.RotatedRelativePoint(Owner.MountedCenter);
-            Projectile.Center += releaseAimDirection.SafeNormalize(Vector2.UnitX * Owner.direction) * 30f;
+            Vector2 aimDirection = releaseAimDirection.SafeNormalize(Vector2.UnitX * Owner.direction);
+            if (aimDirection == Vector2.Zero)
+                aimDirection = Vector2.UnitX * Owner.direction;
+
+            float minRadius = 15f;
+            float maxRadius = 35f;
+            float t = Math.Abs(aimDirection.Y);
+            float radius = MathHelper.Lerp(minRadius, maxRadius, t);
+            Projectile.Center += aimDirection * radius;
         }
+        
         #endregion
 
         #region Drawing

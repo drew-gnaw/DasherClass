@@ -10,7 +10,7 @@ namespace DasherClass.Items.Weapons
     public class WoodenPlank : ModItem, ILocalizedModType
     {
         public new string LocalizationCategory => "Items.Weapons";
-        public const int OnHitIFrames = 15;
+        public const int OnHitIFrames = (int) WoodenPlankDash.DashTime;
 
         public override void SetDefaults()
         {
@@ -22,7 +22,7 @@ namespace DasherClass.Items.Weapons
             Item.channel = true;
             Item.useAnimation = Item.useTime = 40;
             Item.useTurn = true;
-            Item.useStyle = ItemUseStyleID.Swing;
+            Item.useStyle = ItemUseStyleID.Shoot;
             Item.knockBack = 3f;
             Item.UseSound = SoundID.Item1;
             Item.autoReuse = true;
