@@ -39,7 +39,7 @@ namespace DasherClass.Projectiles
         private Vector2 releaseAimDirection = Vector2.Zero;
         public override void SetStaticDefaults()
         {
-            Main.projFrames[Projectile.type] = 14;
+            Main.projFrames[Projectile.type] = 1;
         }
 
         public override void SetDefaults()
