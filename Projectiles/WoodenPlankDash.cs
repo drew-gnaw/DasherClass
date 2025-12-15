@@ -5,8 +5,6 @@ using Terraria;
 using Terraria.ModLoader;
 using Terraria.ID;
 using System;
-using Microsoft.Build.Evaluation;
-using System.Threading;
 
 namespace DasherClass.Projectiles
 {
@@ -34,7 +32,8 @@ namespace DasherClass.Projectiles
         public const float ChargeTime = 50f;
         public const float DashTime = 30f;
         public const float pullBackScale = 0.995f;
-        public float pullBackRate = 1f;
+        public const float MaxPullBackRate = 0.75f;
+        public float pullBackRate;
         public bool isMidlunge = false;
         public float currentChargeTime = 0f;
         public float currentDashTime = 0f;
@@ -79,7 +78,8 @@ namespace DasherClass.Projectiles
                 }
                 currentChargeTime++;
                 Projectile.friendly = false;
-                pullBackRate = pullBackRate > 0.85? pullBackRate * pullBackScale : 0.85f;
+                float t = MathHelper.Clamp(currentChargeTime / ChargeTime, 0f, 1f);
+                pullBackRate = MathHelper.Lerp(1f, MaxPullBackRate, 1 - (1 - t) * (1 - t));
                 HandleChargingProjectileVisuals();
                 HandleChargingPositioning(pullBackRate);
             } else
@@ -184,8 +184,8 @@ namespace DasherClass.Projectiles
             if (aimDirection == Vector2.Zero)
                 aimDirection = Vector2.UnitX * Owner.direction;
 
-            float minRadius = 15f;
-            float maxRadius = 35f;
+            float minRadius = 23f;
+            float maxRadius = 38f;
             float t = Math.Abs(aimDirection.Y);
             float radius = MathHelper.Lerp(minRadius, maxRadius, t) * pullBackScale;
             Projectile.Center += aimDirection * radius;
@@ -217,8 +217,8 @@ namespace DasherClass.Projectiles
             if (aimDirection == Vector2.Zero)
                 aimDirection = Vector2.UnitX * Owner.direction;
 
-            float minRadius = 15f;
-            float maxRadius = 35f;
+            float minRadius = 23f;
+            float maxRadius = 38f;
             float t = Math.Abs(aimDirection.Y);
             float radius = MathHelper.Lerp(minRadius, maxRadius, t);
             Projectile.Center += aimDirection * radius;
