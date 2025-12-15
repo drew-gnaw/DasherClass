@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using DasherClass.Balancing;
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.ID;
@@ -14,53 +13,6 @@ namespace DasherClass
     {
         
         #region Immunity Frames
-        /// <summary>
-        /// Computes the appropriate amount of immunity frames to grant a player when they are struck by an attack.<br />
-        /// Accounts for all Calamity effects, but not effects from other mods.
-        /// </summary>
-        /// <param name="player">The player whose immunity frames are being computed.</param>
-        /// <returns>The amount of immunity frames the player should receive if struck.</returns>
-        public static int ComputeHitIFrames(this Player player, HurtInfo hurtInfo)
-        {
-            // Start with vanilla immunity frames.
-            int iframes = BalancingConstants.VanillaDefaultIFrames + (player.longInvince ? BalancingConstants.CrossNecklaceIFrameBoost : 0);
-
-            return iframes;
-        }
-      
-        /// <summary>
-        /// Computes the appropriate amount of immunity frames to grant a player when they activate a dodge.<br />
-        /// Accounts for all Calamity effects, but not effects from other mods.
-        /// </summary>
-        /// <param name="player">The player whose immunity frames are being computed.</param>
-        /// <returns>The amount of immunity frames the player should receive upon dodging.</returns>
-        public static int ComputeDodgeIFrames(this Player player)
-        {
-            int iframes = BalancingConstants.VanillaDodgeIFrames + (player.longInvince ? BalancingConstants.CrossNecklaceIFrameBoost : 0);
-            return iframes;
-        }
-
-        /// <summary>
-        /// Computes the appropriate amount of immunity frames to grant a player when they activate a parry.<br />
-        /// Accounts for all Calamity effects, but not effects from other mods.
-        /// </summary>
-        /// <param name="player">The player whose immunity frames are being computed.</param>
-        /// <returns>The amount of immunity frames the player should receive upon parrying.</returns>
-        public static int ComputeParryIFrames(this Player player)
-        {
-            int iframes = BalancingConstants.VanillaParryIFrames + (player.longInvince ? BalancingConstants.CrossNecklaceIFrameBoost_Parry : 0);
-            return iframes;
-        }
-
-        // Currently, reflects are functionally equivalent to dodges.
-        /// <summary>
-        /// Computes the appropriate amount of immunity frames to grant a player when they activate a reflect.<br />
-        /// Accounts for all Calamity effects, but not effects from other mods.
-        /// </summary>
-        /// <param name="player">The player whose immunity frames are being computed.</param>
-        /// <returns>The amount of immunity frames the player should receive upon reflecting an attack.</returns>
-        public static int ComputeReflectIFrames(this Player player) => player.ComputeDodgeIFrames();
-
         /// <summary>
         /// Checks whether the player has any kind of immunity frames (or "iframes" for short) available.
         /// </summary>
