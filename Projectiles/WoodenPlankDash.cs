@@ -31,7 +31,6 @@ namespace DasherClass.Projectiles
         public const float LungeSpeed = 10f;
         public const float ChargeTime = 50f;
         public const float DashTime = 30f;
-        public const float pullBackScale = 0.995f;
         public const float MaxPullBackRate = 0.75f;
         public float pullBackRate;
         public bool isMidlunge = false;
