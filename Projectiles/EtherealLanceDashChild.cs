@@ -1,7 +1,9 @@
 using DasherClass;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -15,6 +17,9 @@ namespace DasherClass.Projectiles
         private const float OrbitRadius = 40f;         // Distance from player center while orbiting
         private const float LaunchSpeed = 70f;         // Speed when shot forward
         private const float RotationOffset = MathHelper.PiOver2; // 90 degrees perpendicular to aim direction
+        private const float IndicatorLineLength = 900f; // Length of the aiming indicator line
+        private const float IndicatorLineAlpha = 0.4f;  // Transparency of the indicator line
+        private const int AfterimageCount = 8;          // Number of afterimages to draw
         
         public Player Owner => Main.player[Projectile.owner];
         public int ParentIndex => (int)Projectile.ai[0];
@@ -23,6 +28,13 @@ namespace DasherClass.Projectiles
         
         private bool hasLaunched = false;
         private Vector2 launchDirection = Vector2.Zero;
+
+        public override void SetStaticDefaults()
+        {
+            // Enable old position tracking for afterimages
+            ProjectileID.Sets.TrailCacheLength[Projectile.type] = AfterimageCount;
+            ProjectileID.Sets.TrailingMode[Projectile.type] = 2; // Records old position and rotation
+        }
 
         public override void SetDefaults()
         {
@@ -44,7 +56,6 @@ namespace DasherClass.Projectiles
             {
                 // Already launched - fly in a straight line
                 Projectile.friendly = true;
-                Projectile.tileCollide = true;
                 Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.Pi;
                 return;
             }
@@ -112,7 +123,6 @@ namespace DasherClass.Projectiles
         {
             hasLaunched = true;
             Projectile.friendly = true;
-            Projectile.tileCollide = true;
             Projectile.timeLeft = 180; // 3 seconds of flight time after launch
             
             // Use the stored launch direction
@@ -124,17 +134,94 @@ namespace DasherClass.Projectiles
             Projectile.netUpdate = true;
         }
 
+        /// <summary>
+        /// Returns a rainbow color that cycles over time, with an offset based on charge stage.
+        /// Empress of Light style: lower saturation for a more pastel/white look.
+        /// </summary>
+        private Color GetRainbowColor(float timeOffset = 0f)
+        {
+            // Offset the hue based on ChargeStage and SideMultiplier for variety
+            float hueOffset = (ChargeStage * 0.15f) + (SideMultiplier * 0.05f) + timeOffset;
+            float hue = ((Main.GlobalTimeWrappedHourly * 0.5f) + hueOffset) % 1f;
+            // Lower saturation (0.4) for pastel/white look, high brightness
+            return Main.hslToRgb(hue, 0.4f, 0.65f);
+        }
+
+        /// <summary>
+        /// Returns a more saturated rainbow color for edge effects.
+        /// </summary>
+        private Color GetEdgeRainbowColor(float timeOffset = 0f)
+        {
+            float hueOffset = (ChargeStage * 0.15f) + (SideMultiplier * 0.05f) + timeOffset;
+            float hue = ((Main.GlobalTimeWrappedHourly * 0.5f) + hueOffset) % 1f;
+            // Higher saturation for the edge glow
+            return Main.hslToRgb(hue, 0.85f, 0.55f);
+        }
+
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
+            // Get colors for this projectile
+            Color coreColor = GetRainbowColor();         // Pastel/white core
+            Color edgeColor = GetEdgeRainbowColor();     // Saturated edge color
+            
+            // Draw indicator line if not yet launched
+            if (!hasLaunched)
+            {
+                DrawIndicatorLine(edgeColor);
+            }
+            
+            Texture2D texture = TextureAssets.Projectile[Projectile.type].Value;
             Vector2 origin = texture.Size() * 0.5f;
             SpriteEffects effects = SpriteEffects.None;
             
+            // Draw afterimages when launched and moving
+            if (hasLaunched && Projectile.velocity.Length() > 1f)
+            {
+                for (int i = AfterimageCount - 1; i >= 0; i--)
+                {
+                    Vector2 afterimagePos = Projectile.oldPos[i] + Projectile.Size * 0.5f;
+                    float afterimageRotation = Projectile.oldRot[i];
+                    
+                    // Calculate fade based on position in trail
+                    float progress = (float)i / AfterimageCount;
+                    float alpha = (1f - progress) * 0.5f;
+                    
+                    // Shift hue slightly for each afterimage for a rainbow trail effect
+                    Color afterimageColor = GetEdgeRainbowColor(progress * 0.3f) * alpha;
+                    
+                    Main.EntitySpriteDraw(
+                        texture,
+                        afterimagePos - Main.screenPosition,
+                        null,
+                        afterimageColor,
+                        afterimageRotation,
+                        origin,
+                        Projectile.scale * (1f - progress * 0.2f), // Slightly smaller afterimages
+                        effects,
+                        0
+                    );
+                }
+            }
+            
+            // Draw the edge color layer (slightly larger, behind the core)
             Main.EntitySpriteDraw(
                 texture,
                 Projectile.Center - Main.screenPosition,
                 null,
-                lightColor,
+                edgeColor * 0.6f,
+                Projectile.rotation,
+                origin,
+                Projectile.scale * 1.15f, // Slightly larger for edge glow
+                effects,
+                0
+            );
+            
+            // Draw the main projectile with pastel core color
+            Main.EntitySpriteDraw(
+                texture,
+                Projectile.Center - Main.screenPosition,
+                null,
+                coreColor,
                 Projectile.rotation,
                 origin,
                 Projectile.scale,
@@ -142,17 +229,72 @@ namespace DasherClass.Projectiles
                 0
             );
             
+            // Draw a bright white center for that ethereal glow
+            Main.EntitySpriteDraw(
+                texture,
+                Projectile.Center - Main.screenPosition,
+                null,
+                Color.White * 0.4f,
+                Projectile.rotation,
+                origin,
+                Projectile.scale * 0.7f, // Smaller white core
+                effects,
+                0
+            );
+            
             return false;
+        }
+
+        private void DrawIndicatorLine(Color baseColor)
+        {
+            // Get the direction this projectile is pointing
+            Vector2 direction = launchDirection;
+            if (direction == Vector2.Zero)
+                direction = (Main.MouseWorld - Projectile.Center).SafeNormalize(Vector2.UnitX);
+            
+            // Use a simple pixel texture for the line
+            Texture2D pixel = TextureAssets.MagicPixel.Value;
+            
+            // Draw multiple segments to create a fading line effect
+            int segments = 60;
+            float segmentLength = IndicatorLineLength / segments;
+            
+            for (int i = 0; i < segments; i++)
+            {
+                float progress = (float)i / segments;
+                Vector2 segmentStart = Projectile.Center + direction * (i * segmentLength);
+                
+                // Fade out the line as it gets further from the projectile
+                float alpha = IndicatorLineAlpha * (1f - progress * 0.8f);
+                Color segmentColor = baseColor * alpha;
+                
+                // Calculate rotation for the segment
+                float rotation = direction.ToRotation();
+                
+                // Draw the segment
+                Main.EntitySpriteDraw(
+                    pixel,
+                    segmentStart - Main.screenPosition,
+                    new Rectangle(0, 0, 1, 1),
+                    segmentColor,
+                    rotation,
+                    new Vector2(0.5f, 0.5f),
+                    new Vector2(segmentLength + 1, 2.5f), // width x height of segment
+                    SpriteEffects.None,
+                    0
+                );
+            }
         }
 
         public override void OnKill(int timeLeft)
         {
-            // Spawn some dust on death
-            for (int i = 0; i < 8; i++)
+            // Spawn rainbow-colored dust on death
+            Color rainbowColor = GetEdgeRainbowColor();
+            for (int i = 0; i < 10; i++)
             {
-                Dust dust = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.GemEmerald, 0f, 0f, 100, default, 0.8f);
+                Dust dust = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.RainbowTorch, 0f, 0f, 100, rainbowColor, 1f);
                 dust.noGravity = true;
-                dust.velocity *= 1.5f;
+                dust.velocity *= 2f;
             }
         }
     }

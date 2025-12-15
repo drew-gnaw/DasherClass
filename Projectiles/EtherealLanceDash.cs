@@ -17,6 +17,8 @@ namespace DasherClass.Projectiles
         public override float PullBackScale => 0.995f;
         public override float MaxPullBackRate => 0.90f;
         public override int OnHitIFrames => 15;
+        public override float HoldMinRadius => 67f;
+        public override float HoldMaxRadius => 80f;
 
         // consts specific to Ethereal Lance: charge stages
         public const int MaxChargeStages = 4;
@@ -54,6 +56,7 @@ namespace DasherClass.Projectiles
 
             base.AI();
         }
+
 
         private void SpawnChildProjectiles(int chargeStage)
         {

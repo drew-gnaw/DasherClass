@@ -16,6 +16,8 @@ namespace DasherClass.Projectiles
         public override float PullBackScale => 0.995f;
         public override float MaxPullBackRate => 0.75f;
         public override int OnHitIFrames => 30;
+        public override float HoldMinRadius => 23f;
+        public override float HoldMaxRadius => 38f;
 
         public override void SetStaticDefaults()
         {

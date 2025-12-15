@@ -10,5 +10,10 @@ WoodenPlank: {
 
 EtherealLance: {
 	DisplayName: Ethereal Lance
-	Tooltip: ""
+	Tooltip:
+		'''
+		Charging the lance creates additional lances that aim at your cursor
+
+		Lunging with the lance sends the additional lances out
+		'''
 }

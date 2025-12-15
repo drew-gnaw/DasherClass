@@ -14,6 +14,9 @@ public class DasherClassGlobalNPCLoot : GlobalNPC
             case NPCID.UndeadViking:
                 npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<DasherClass.Items.Materials.VikingPlating>(), 1, 6, 10));
                 break;
+            case NPCID.HallowBoss:
+                npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<DasherClass.Items.Weapons.EtherealLance>(), 1, 1, 1));
+                break;
         }
     }
 }
