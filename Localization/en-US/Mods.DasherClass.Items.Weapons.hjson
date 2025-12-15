@@ -17,3 +17,8 @@ EtherealLance: {
 		Lunging with the lance sends the additional lances out
 		'''
 }
+
+ChainedSpirit: {
+	Tooltip: ""
+	DisplayName: Chained Spirit
+}
