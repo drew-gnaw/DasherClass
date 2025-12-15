@@ -7,14 +7,14 @@ using Terraria.ModLoader;
 
 namespace DasherClass.Items.Weapons
 {
-    public class WoodenPlank : ModItem, ILocalizedModType
+    public class EtherealLance : ModItem, ILocalizedModType
     {
         public new string LocalizationCategory => "Items.Weapons";
 
         public override void SetDefaults()
         {
             Item.width = Item.height = 40;
-            Item.damage = 25;
+            Item.damage = 400;
             Item.DamageType = DasherDamageClass.Instance;
             Item.noMelee = true;
             Item.noUseGraphic = true;
@@ -26,7 +26,7 @@ namespace DasherClass.Items.Weapons
             Item.UseSound = SoundID.Item1;
             Item.autoReuse = true;
             Item.value = Item.buyPrice(gold: 10);
-            Item.shoot = ModContent.ProjectileType<WoodenPlankDash>();
+            Item.shoot = ModContent.ProjectileType<EtherealLanceDash>();
             Item.shootSpeed = 1f;
             Item.rare = ItemRarityID.Red;
         }
@@ -45,8 +45,7 @@ namespace DasherClass.Items.Weapons
 		public override void AddRecipes()
 		{
 			Recipe recipe = CreateRecipe();
-			recipe.AddIngredient(ItemID.Wood, 7);
-			recipe.AddIngredient(ItemID.Rope, 3);
+			recipe.AddIngredient(ItemID.DirtBlock, 1);
 			recipe.AddTile(TileID.WorkBenches);
 			recipe.Register();
 		}
