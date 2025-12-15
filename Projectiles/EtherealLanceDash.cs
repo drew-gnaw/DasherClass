@@ -9,38 +9,15 @@ using System.Collections;
 
 namespace DasherClass.Projectiles
 {
-    public class EtherealLanceDash : ModProjectile, ILocalizedModType
+    public class EtherealLanceDash : LanceWeaponProjectile
     {
-        public new string LocalizationCategory => "Projectiles";
-        public Player Owner => Main.player[Projectile.owner];
-        public bool HasPerformedLunge
-        {
-            get => Projectile.ai[0] == 1f;
-            set
-            {
-                int newValue = value.ToInt();
-                if (Projectile.ai[0] != newValue)
-                {
-                    Projectile.ai[0] = newValue;
-                    Projectile.netUpdate = true;
-                }
-            }
-        }
+        public override float LungeSpeed => 60f;
+        public override float ChargeTime => 50f;
+        public override float DashTime => 15f;
+        public override float PullBackScale => 0.995f;
+        public override float MaxPullBackRate => 0.90f;
+        public override int OnHitIFrames => 15;
 
-        public ref float Time => ref Projectile.ai[1];
-
-        public const float LungeSpeed = 60f;
-        public const float ChargeTime = 50f;
-        public const float DashTime = 15f;
-        public const float pullBackScale = 0.995f;
-        public const float MaxPullBackRate = 0.90f;
-        public float pullBackRate;
-        public bool isMidlunge = false;
-        public float currentChargeTime = 0f;
-        public float currentDashTime = 0f;
-
-        // Direction captured at the moment the charge ends (player release).
-        private Vector2 releaseAimDirection = Vector2.Zero;
         public override void SetStaticDefaults()
         {
             Main.projFrames[Projectile.type] = 1;
@@ -59,162 +36,6 @@ namespace DasherClass.Projectiles
             Projectile.localNPCHitCooldown = 12;
             Projectile.frameCounter = 0;
         }
-
-        #region AI
-        public override void AI()
-        {
-            if (isMidlunge)
-            {
-                Projectile.friendly = true;
-                HandleProjectileVisuals();
-                HandlePositioning();
-            } else if (Owner.controlUseItem)
-            {
-                if (currentChargeTime >= ChargeTime) 
-                {
-                    GenerateChargedParticle(Owner);
-                } else
-                {
-                    GenerateChargingParticles(Owner, currentChargeTime);
-                }
-                currentChargeTime++;
-                Projectile.friendly = false;
-                float t = MathHelper.Clamp(currentChargeTime / ChargeTime, 0f, 1f);
-                pullBackRate = MathHelper.Lerp(1f, MaxPullBackRate, 1 - (1 - t) * (1 - t));
-                HandleChargingProjectileVisuals();
-                HandleChargingPositioning(pullBackRate);
-            } else
-            {
-                if (currentChargeTime >= ChargeTime) 
-                {
-                    isMidlunge = true;
-                    pullBackRate = 1f;
-                    if (!HasPerformedLunge)
-                    {
-                        // Capture aim direction at release on the owning client.
-                        if (Projectile.owner == Main.myPlayer)
-                        {
-                            releaseAimDirection = (Main.MouseWorld - Owner.Center).SafeNormalize(Vector2.UnitX * Owner.direction);
-                        }
-                        PerformLunge();
-                    }
-                } else
-                {
-                    Projectile.Kill();
-                }
-            }
-        }
-
-        internal static void GenerateChargingParticles(Player player, float time)
-        {
-            if (Main.dedServ)
-                return;
-
-            int amountGenerated = (int) time / 20;
-            for (int i = 0; i < amountGenerated; i++)
-            {
-                Dust dust = Dust.NewDustDirect(player.position + new Vector2(-4, 0), player.width + 15, player.height + 15, DustID.GemRuby, 0f, 0f, 100, default, 0.45f + Main.rand.NextFloat() * 0.35f);
-                dust.noGravity = true;
-                dust.fadeIn = 1f;
-
-                // Pull toward player center; strength scales with distance and charge progress.
-                Vector2 toCenter = player.Center - dust.position;
-                float pullFactor = 0.01f; // adjust for stronger/weaker pull
-                dust.velocity = toCenter * pullFactor + player.velocity * 0.2f;
-            }
-        }
-
-        internal static void GenerateChargedParticle(Player player)
-        {
-            if (Main.dedServ)
-                return;
-            // Spawn a burst of charged particles that push outward from the player.
-            for (int i = 0; i < 3; i++)
-            {
-                Dust dust = Dust.NewDustDirect(player.position + new Vector2(-4, 0), player.width + 3, player.height + 3, DustID.GemEmerald, 0f, 0f, 100, default, 0.45f + Main.rand.NextFloat() * 0.35f);
-                dust.noGravity = true;
-                dust.fadeIn = 1f;
-
-                // Push away from the player's center; add a small random spread and inherit some player velocity.
-                Vector2 fromCenter = dust.position - player.Center;
-                float pushFactor = 0.03f + Main.rand.NextFloat() * 0.06f;
-                dust.velocity = fromCenter * pushFactor + player.velocity * 0.25f + Utils.RandomVector2(Main.rand, -0.5f, 0.5f);
-            }
-        }
-
-        internal void PerformLunge()
-        {
-            if (Main.myPlayer != Projectile.owner)
-                return;
-               
-            Owner.GiveUniversalIFrames(WoodenPlank.OnHitIFrames);
-
-            Vector2 aim = releaseAimDirection;
-            if (aim == Vector2.Zero)
-                aim = Projectile.velocity.SafeNormalize(Vector2.UnitX * Owner.direction);
-
-            Owner.velocity = aim * LungeSpeed;
-            Owner.gravity = 0;
-            
-            HasPerformedLunge = true;
-        }
-
-        internal void HandleChargingProjectileVisuals()
-        {
-            float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
-            Projectile.rotation = velocityAngle + MathHelper.Pi;
-        }
-
-        internal void HandleChargingPositioning(float pullBackScale)
-        {
-            Projectile.Center = Owner.RotatedRelativePoint(Owner.MountedCenter);
-            Vector2 aimDirection = (Main.MouseWorld - Owner.Center).SafeNormalize(Vector2.UnitX * Owner.direction);
-            if (aimDirection == Vector2.Zero)
-                aimDirection = Vector2.UnitX * Owner.direction;
-
-            float minRadius = 23f;
-            float maxRadius = 38f;
-            float t = Math.Abs(aimDirection.Y);
-            float radius = MathHelper.Lerp(minRadius, maxRadius, t) * pullBackScale;
-            Projectile.Center += aimDirection * radius;
-            Projectile.direction = aimDirection.X >= 0f ? 1 : -1;
-            Owner.ChangeDir(Projectile.direction);
-        }
-
-        internal void HandleProjectileVisuals()
-        {
-            float velocityAngle = releaseAimDirection.ToRotation();
-            Projectile.rotation = velocityAngle + MathHelper.Pi;
-            if (currentDashTime < DashTime)
-            {
-                currentDashTime++;
-            }
-            else
-            {
-                releaseAimDirection = Vector2.Zero;
-                currentDashTime = 0f;
-                isMidlunge = false;
-                Projectile.Kill();
-                Owner.velocity = Vector2.Zero;
-                Owner.gravity = 1f;
-            }
-        }
-
-        internal void HandlePositioning()
-        {
-            Projectile.Center = Owner.RotatedRelativePoint(Owner.MountedCenter);
-            Vector2 aimDirection = releaseAimDirection.SafeNormalize(Vector2.UnitX * Owner.direction);
-            if (aimDirection == Vector2.Zero)
-                aimDirection = Vector2.UnitX * Owner.direction;
-
-            float minRadius = 23f;
-            float maxRadius = 38f;
-            float t = Math.Abs(aimDirection.Y);
-            float radius = MathHelper.Lerp(minRadius, maxRadius, t);
-            Projectile.Center += aimDirection * radius;
-        }
-        
-        #endregion
 
         #region Drawing
 

@@ -10,7 +10,6 @@ namespace DasherClass.Items.Weapons
     public class WoodenPlank : ModItem, ILocalizedModType
     {
         public new string LocalizationCategory => "Items.Weapons";
-        public const int OnHitIFrames = (int) WoodenPlankDash.DashTime;
 
         public override void SetDefaults()
         {
