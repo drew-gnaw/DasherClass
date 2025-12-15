@@ -5,6 +5,7 @@ using Terraria;
 using Terraria.ModLoader;
 using Terraria.ID;
 using System;
+using System.Collections;
 
 namespace DasherClass.Projectiles
 {
@@ -28,9 +29,9 @@ namespace DasherClass.Projectiles
 
         public ref float Time => ref Projectile.ai[1];
 
-        public const float LungeSpeed = 90f;
+        public const float LungeSpeed = 60f;
         public const float ChargeTime = 50f;
-        public const float DashTime = 90f;
+        public const float DashTime = 15f;
         public const float pullBackScale = 0.995f;
         public const float MaxPullBackRate = 0.90f;
         public float pullBackRate;
@@ -153,22 +154,9 @@ namespace DasherClass.Projectiles
                 aim = Projectile.velocity.SafeNormalize(Vector2.UnitX * Owner.direction);
 
             Owner.velocity = aim * LungeSpeed;
+            Owner.gravity = 0;
+            
             HasPerformedLunge = true;
-        }
-
-        internal void ReelBack()
-        {
-            Owner.GiveUniversalIFrames(WoodenPlank.OnHitIFrames);
-
-            if (Main.myPlayer != Projectile.owner)
-                return;
-
-            // Reel back after collision.
-            Owner.velocity = Vector2.Reflect(Owner.velocity.SafeNormalize(Vector2.Zero), Projectile.velocity.SafeNormalize(Vector2.Zero)) * Owner.velocity.Length();
-
-            // Create on-hit tile dust.
-            Collision.HitTiles(Projectile.position, Projectile.velocity, Projectile.width + 16, Projectile.height + 16);
-            Projectile.Kill();
         }
 
         internal void HandleChargingProjectileVisuals()
@@ -207,6 +195,8 @@ namespace DasherClass.Projectiles
                 currentDashTime = 0f;
                 isMidlunge = false;
                 Projectile.Kill();
+                Owner.velocity = Vector2.Zero;
+                Owner.gravity = 1f;
             }
         }
 
