@@ -12,3 +12,8 @@ EtherealLance: {
 	DisplayName: Ethereal Lance
 	Tooltip: ""
 }
+
+ChainedSpirit: {
+	Tooltip: ""
+	DisplayName: Chained Spirit
+}

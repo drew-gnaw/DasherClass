@@ -139,8 +139,22 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
 
         internal void HandleChargingProjectileVisuals()
         {
+            // Animate frames at a steady rate and point the projectile toward the mouse while charging.
             float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
             Projectile.rotation = velocityAngle + MathHelper.Pi;
+            // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
+            Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
+
+            // Simple frame timer: advance `Projectile.frame` every `frameDelay` ticks.
+            int frameDelay = 10;
+            Projectile.frameCounter++;
+            if (Projectile.frameCounter >= frameDelay)
+            {
+                Projectile.frameCounter = 0;
+                Projectile.frame++;
+                if (Projectile.frame >= Main.projFrames[Projectile.type])
+                    Projectile.frame = 0;
+            }
         }
 
         internal void HandleChargingPositioning(float pullBackScale)
@@ -161,8 +175,21 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
 
         internal virtual void HandleProjectileVisuals()
         {
+            // Animate frames and orient the projectile during the dash.
             float velocityAngle = releaseAimDirection.ToRotation();
             Projectile.rotation = velocityAngle + MathHelper.Pi;
+            // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
+            Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
+
+            int frameDelay = 10;
+            Projectile.frameCounter++;
+            if (Projectile.frameCounter >= frameDelay)
+            {
+                Projectile.frameCounter = 0;
+                Projectile.frame++;
+                if (Projectile.frame >= Main.projFrames[Projectile.type])
+                    Projectile.frame = 0;
+            }
             if (currentDashTime < DashTime)
             {
                 currentDashTime++;
