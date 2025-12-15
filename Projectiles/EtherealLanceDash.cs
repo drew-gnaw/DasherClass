@@ -18,6 +18,13 @@ namespace DasherClass.Projectiles
         public override float MaxPullBackRate => 0.90f;
         public override int OnHitIFrames => 15;
 
+        // consts specific to Ethereal Lance: charge stages
+        public const int MaxChargeStages = 4;
+        public const float ChargeStageInterval = 50f; 
+
+        private const float ChildDamageMultiplier = 0.5f; // Child projectiles deal 50% of lance damage
+        private int SpawnedChildrenForStage = 0; // represents the largest chatge stage for which children have been spawned
+
         public override void SetStaticDefaults()
         {
             Main.projFrames[Projectile.type] = 1;
@@ -35,6 +42,44 @@ namespace DasherClass.Projectiles
             Projectile.usesLocalNPCImmunity = true;
             Projectile.localNPCHitCooldown = 12;
             Projectile.frameCounter = 0;
+        }
+
+        public override void AI()
+        {
+            int currentChargeStage = Math.Clamp((int)(currentChargeTime - ChargeTime) / (int)ChargeStageInterval, 0, MaxChargeStages);
+            if (SpawnedChildrenForStage < currentChargeStage && Owner.controlUseItem)
+            {
+                SpawnChildProjectiles(++SpawnedChildrenForStage);
+            }
+
+            base.AI();
+        }
+
+        private void SpawnChildProjectiles(int chargeStage)
+        {
+            if (Main.myPlayer != Projectile.owner)
+                return;
+
+            int childType = ModContent.ProjectileType<EtherealLanceDashChild>();
+            int childDamage = (int)(Projectile.damage * ChildDamageMultiplier);
+            float knockback = Projectile.knockBack * 0.5f;
+
+            // Spawn two children on opposite sides
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Projectile.NewProjectile(
+                    Projectile.GetSource_FromThis(),
+                    Owner.Center,
+                    Vector2.Zero,
+                    childType,
+                    childDamage,
+                    knockback,
+                    Projectile.owner,
+                    ai0: Projectile.whoAmI,  // Parent projectile index
+                    ai1: side,                 // Side multiplier (+1 or -1)
+                    ai2: chargeStage
+                );
+            }
         }
 
         #region Drawing
