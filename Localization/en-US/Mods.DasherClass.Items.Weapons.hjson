@@ -2,3 +2,8 @@ BlouisSword: {
 	DisplayName: Blouis Sword
 	Tooltip: Ohhh I'm blooming
 }
+
+WoodenPlank: {
+	Tooltip: Put together shoddily
+	DisplayName: Wooden Plank
+}
