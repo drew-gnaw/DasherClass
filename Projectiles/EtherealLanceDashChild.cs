@@ -12,22 +12,25 @@ namespace DasherClass.Projectiles
     public class EtherealLanceDashChild : ModProjectile
     {
         // ai[0]: Parent projectile index (-1 if no parent or parent is gone)
-        // ai[1]: Side offset multiplier (+1 for one side, -1 for the other)
+        // ai[1]: Slot index for positioning around the player
+        // ai[2]: Total number of slots for angle calculation
         
-        private const float OrbitRadius = 40f;         // Distance from player center while orbiting
+        private const float OrbitRadius = 60f;         // Distance from player center while orbiting
         private const float LaunchSpeed = 70f;         // Speed when shot forward
-        private const float RotationOffset = MathHelper.PiOver2; // 90 degrees perpendicular to aim direction
-        private const float IndicatorLineLength = 900f; // Length of the aiming indicator line
+        private const float IndicatorLineLength = 1200f; // Length of the aiming indicator line
         private const float IndicatorLineAlpha = 0.4f;  // Transparency of the indicator line
         private const int AfterimageCount = 8;          // Number of afterimages to draw
+        private const float SpinSpeed = 0.05f;          // How fast the lances spin (radians per frame)
         
         public Player Owner => Main.player[Projectile.owner];
         public int ParentIndex => (int)Projectile.ai[0];
-        public float SideMultiplier => Projectile.ai[1];
-        public int ChargeStage => (int)Projectile.ai[2]; // integer from 1-max indicating charge stage. 1 is closest to player, max is farthest.
+        public int SlotIndex => (int)Projectile.ai[1];    // Which slot this lance occupies
+        public int TotalSlots => (int)Projectile.ai[2];   // Total slots in the orbit circle
         
         private bool hasLaunched = false;
         private Vector2 launchDirection = Vector2.Zero;
+
+        private float spinAngle = 0f; // Current spin angle (shared timing via GlobalTimeWrappedHourly)
 
         public override void SetStaticDefaults()
         {
@@ -99,14 +102,21 @@ namespace DasherClass.Projectiles
 
         private void PositionAroundPlayer()
         {
-            // Calculate position perpendicular to the aim direction
-            Vector2 aimDirection = (Main.MouseWorld - Owner.Center).SafeNormalize(Vector2.UnitX * Owner.direction);
+            // Calculate the base angle for this slot (evenly distributed around the circle)
+            float slotAngle = (SlotIndex / (float)TotalSlots) * MathHelper.TwoPi;
             
-            // Get perpendicular direction (rotate 90 degrees)
-            Vector2 perpendicular = aimDirection.RotatedBy(RotationOffset * SideMultiplier);
+            // Add a global spin that's synchronized across all lances
+            // Using GlobalTimeWrappedHourly ensures all lances spin together
+            float globalSpin = Main.GlobalTimeWrappedHourly * 3f; // Spin speed multiplier
+            
+            // Final angle = slot's base position + global spin
+            float finalAngle = slotAngle + globalSpin;
+            
+            // Convert angle to direction vector
+            Vector2 orbitDirection = finalAngle.ToRotationVector2();
             
             // Position the projectile at orbit radius from player
-            Projectile.Center = Owner.Center + perpendicular * (OrbitRadius * ChargeStage);
+            Projectile.Center = Owner.Center + orbitDirection * OrbitRadius;
         }
 
         private void PointTowardsCursor()
@@ -135,13 +145,13 @@ namespace DasherClass.Projectiles
         }
 
         /// <summary>
-        /// Returns a rainbow color that cycles over time, with an offset based on charge stage.
+        /// Returns a rainbow color that cycles over time, with an offset based on slot index.
         /// Empress of Light style: lower saturation for a more pastel/white look.
         /// </summary>
         private Color GetRainbowColor(float timeOffset = 0f)
         {
-            // Offset the hue based on ChargeStage and SideMultiplier for variety
-            float hueOffset = (ChargeStage * 0.15f) + (SideMultiplier * 0.05f) + timeOffset;
+            // Offset the hue based on SlotIndex for variety
+            float hueOffset = (SlotIndex / (float)Math.Max(1, TotalSlots)) + timeOffset;
             float hue = ((Main.GlobalTimeWrappedHourly * 0.5f) + hueOffset) % 1f;
             // Lower saturation (0.4) for pastel/white look, high brightness
             return Main.hslToRgb(hue, 0.4f, 0.65f);
@@ -152,7 +162,7 @@ namespace DasherClass.Projectiles
         /// </summary>
         private Color GetEdgeRainbowColor(float timeOffset = 0f)
         {
-            float hueOffset = (ChargeStage * 0.15f) + (SideMultiplier * 0.05f) + timeOffset;
+            float hueOffset = (SlotIndex / (float)Math.Max(1, TotalSlots)) + timeOffset;
             float hue = ((Main.GlobalTimeWrappedHourly * 0.5f) + hueOffset) % 1f;
             // Higher saturation for the edge glow
             return Main.hslToRgb(hue, 0.85f, 0.55f);
