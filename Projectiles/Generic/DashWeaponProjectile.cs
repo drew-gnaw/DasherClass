@@ -16,6 +16,9 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
     public abstract float MaxPullBackRate { get; }
     public abstract int OnHitIFrames { get; }
 
+    public abstract float HoldMinRadius { get; }
+    public abstract float HoldMaxRadius { get; }
+
     public new string LocalizationCategory => "Projectiles";
     public Player Owner => Main.player[Projectile.owner];
     public bool HasPerformedLunge
@@ -137,7 +140,7 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             HasPerformedLunge = true;
         }
 
-        internal void HandleChargingProjectileVisuals()
+        internal virtual void HandleChargingProjectileVisuals()
         {
             // Animate frames at a steady rate and point the projectile toward the mouse while charging.
             float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
@@ -157,17 +160,16 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             }
         }
 
-        internal void HandleChargingPositioning(float pullBackScale)
+        internal virtual void HandleChargingPositioning(float pullBackScale)
         {
             Projectile.Center = Owner.RotatedRelativePoint(Owner.MountedCenter);
             Vector2 aimDirection = (Main.MouseWorld - Owner.Center).SafeNormalize(Vector2.UnitX * Owner.direction);
             if (aimDirection == Vector2.Zero)
                 aimDirection = Vector2.UnitX * Owner.direction;
 
-            float minRadius = 23f;
-            float maxRadius = 38f;
+            
             float t = Math.Abs(aimDirection.Y);
-            float radius = MathHelper.Lerp(minRadius, maxRadius, t) * pullBackScale;
+            float radius = MathHelper.Lerp(HoldMinRadius, HoldMaxRadius, t) * pullBackScale;
             Projectile.Center += aimDirection * radius;
             Projectile.direction = aimDirection.X >= 0f ? 1 : -1;
             Owner.ChangeDir(Projectile.direction);
