@@ -21,7 +21,7 @@ namespace DasherClass.Projectiles
         public override float HoldMaxRadius => 80f;
 
         // consts specific to Ethereal Lance: charge stages
-        public const int MaxChargeStages = 4;
+        public const int MaxChargeStages = 10;
         public const float ChargeStageInterval = 50f; 
 
         private const float ChildDamageMultiplier = 0.5f; // Child projectiles deal 50% of lance damage
@@ -67,22 +67,22 @@ namespace DasherClass.Projectiles
             int childDamage = (int)(Projectile.damage * ChildDamageMultiplier);
             float knockback = Projectile.knockBack * 0.5f;
 
-            // Spawn two children on opposite sides
-            for (int side = -1; side <= 1; side += 2)
-            {
-                Projectile.NewProjectile(
-                    Projectile.GetSource_FromThis(),
-                    Owner.Center,
-                    Vector2.Zero,
-                    childType,
-                    childDamage,
-                    knockback,
-                    Projectile.owner,
-                    ai0: Projectile.whoAmI,  // Parent projectile index
-                    ai1: side,                 // Side multiplier (+1 or -1)
-                    ai2: chargeStage
-                );
-            }
+            int totalSlots = MaxChargeStages;
+            
+            int slotIndex = chargeStage - 1; // 0, 1, 2, 3...
+
+            Projectile.NewProjectile(
+                Projectile.GetSource_FromThis(),
+                Owner.Center,
+                Vector2.Zero,
+                childType,
+                childDamage,
+                knockback,
+                Projectile.owner,
+                ai0: Projectile.whoAmI,   // Parent projectile index
+                ai1: slotIndex,           // Slot index for positioning
+                ai2: totalSlots           // Total number of slots for angle calculation
+            );
         }
 
         #region Drawing
@@ -93,7 +93,14 @@ namespace DasherClass.Projectiles
             Texture2D punchTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
             Rectangle frame = punchTexture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
             Vector2 origin = frame.Size() * 0.5f;
-            SpriteEffects directionEffect = Projectile.spriteDirection == -1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+            SpriteEffects directionEffect;
+            if (Owner.direction == 1)
+            {
+                directionEffect = SpriteEffects.FlipVertically;
+            } else
+            {
+                directionEffect = SpriteEffects.None;
+            }
             Main.EntitySpriteDraw(punchTexture, Projectile.Center - Main.screenPosition, frame, lightColor, Projectile.rotation, origin, Projectile.scale, directionEffect, 0);
             return false;
         }
