@@ -22,3 +22,8 @@ ChainedSpirit: {
 	Tooltip: ""
 	DisplayName: Chained Spirit
 }
+
+LanceOfThunder: {
+	DisplayName: Lance Of Thunder
+	Tooltip: ""
+}
