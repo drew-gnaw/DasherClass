@@ -20,6 +20,8 @@ namespace DasherClass.Projectiles
         public override int OnHitIFrames => 15;
         public override float HoldMinRadius => 67f;
         public override float HoldMaxRadius => 80f;
+        public override float ChargingFrameDelay => 4f;
+        public override float LungingFrameDelay => 2f;
 
         #region Lightning Effect Tunable Parameters
 
