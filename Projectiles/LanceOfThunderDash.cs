@@ -13,7 +13,7 @@ namespace DasherClass.Projectiles
     public class LanceOfThunderDash : LanceWeaponProjectile
     {
         public override float LungeSpeed => 100f;
-        public override float ChargeTime => 50f;
+        public override float ChargeTime => 600f;
         public override float DashTime => 10f;
         public override float PullBackScale => 0.995f;
         public override float MaxPullBackRate => 0.90f;
@@ -118,6 +118,22 @@ namespace DasherClass.Projectiles
         public float EndpointFlashRadius = 50f;
 
         // ═══════════════════════════════════════════════════════════════
+        // DUST COLOR PARAMETERS
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>Color of the main dust particles along the lightning</summary>
+        public Color LightningDustColor = new Color(255, 255, 150, 255);
+
+        /// <summary>Color of impact/explosion dust at endpoints</summary>
+        public Color ImpactDustColor = new Color(255, 255, 100, 255);
+
+        /// <summary>Color of the secondary impact dust</summary>
+        public Color ImpactDustSecondaryColor = new Color(255, 200, 50, 255);
+
+        /// <summary>Color of dust particles spawned on enemy hits</summary>
+        public Color HitDustColor = new Color(255, 200, 100, 255);
+
+        // ═══════════════════════════════════════════════════════════════
         // DAMAGE PARAMETERS
         // ═══════════════════════════════════════════════════════════════
 
@@ -156,6 +172,71 @@ namespace DasherClass.Projectiles
         /// <summary>Duration of the screen shake in frames</summary>
         public int ScreenShakeDuration = 8;
 
+        // ═══════════════════════════════════════════════════════════════
+        // CHARGING GLOW PARAMETERS
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>Minimum scale boost for glow layers when starting to charge (0 = no size increase)</summary>
+        public float ChargingGlowScaleMin = 0.2f;
+
+        /// <summary>Maximum scale boost for glow layers when fully charged</summary>
+        public float ChargingGlowScaleMax = 0.9f;
+
+        /// <summary>Base glow alpha when starting to charge (0-1)</summary>
+        public float ChargingGlowAlphaMin = 0.1f;
+
+        /// <summary>Maximum glow alpha when fully charged (0-1)</summary>
+        public float ChargingGlowAlphaMax = 0.6f;
+
+        /// <summary>Color of the charging glow (inner, closest to sprite)</summary>
+        public Color ChargingGlowColorInner = new Color(255, 255, 200, 255);
+
+        /// <summary>Color of the charging glow (outer, largest layer)</summary>
+        public Color ChargingGlowColorOuter = new Color(255, 220, 100, 150);
+
+        /// <summary>How much the glow fluctuates when fully charged (0-1)</summary>
+        public float ChargedGlowFluctuationAmount = 0.25f;
+
+        /// <summary>Speed of the glow fluctuation (higher = faster)</summary>
+        public float ChargedGlowFluctuationSpeed = 5f;
+
+        /// <summary>Additional glow multiplier when fully charged</summary>
+        public float ChargedGlowBoostMultiplier = 1.5f;
+
+        // ═══════════════════════════════════════════════════════════════
+        // BACKGROUND LIGHTNING PARAMETERS (when fully charged)
+        // ═══════════════════════════════════════════════════════════════
+
+        /// <summary>Minimum frames between background lightning strikes</summary>
+        public int BackgroundLightningIntervalMin = 15;
+
+        /// <summary>Maximum frames between background lightning strikes</summary>
+        public int BackgroundLightningIntervalMax = 45;
+
+        /// <summary>How far from the player background lightning can spawn</summary>
+        public float BackgroundLightningRadius = 400f;
+
+        /// <summary>Minimum length of background lightning bolts</summary>
+        public float BackgroundLightningLengthMin = 150f;
+
+        /// <summary>Maximum length of background lightning bolts</summary>
+        public float BackgroundLightningLengthMax = 350f;
+
+        /// <summary>Width of background lightning bolts</summary>
+        public float BackgroundLightningWidth = 4f;
+
+        /// <summary>How long background lightning stays visible (frames)</summary>
+        public int BackgroundLightningDuration = 8;
+
+        /// <summary>Alpha multiplier for background lightning (0-1)</summary>
+        public float BackgroundLightningAlpha = 0.7f;
+
+        /// <summary>Jaggedness of background lightning bolts</summary>
+        public float BackgroundLightningJaggedness = 60f;
+
+        /// <summary>Number of segments in background lightning</summary>
+        public int BackgroundLightningSegments = 8;
+
         #endregion
 
         // Internal state for the lightning effect
@@ -164,6 +245,24 @@ namespace DasherClass.Projectiles
         private int lightningTimer = 0;
         private List<LightningBolt> activeLightningBolts = new List<LightningBolt>();
         private HashSet<int> hitNPCs = new HashSet<int>();
+
+        // Charging glow state
+        private List<BackgroundLightningBolt> backgroundLightning = new List<BackgroundLightningBolt>();
+        private int nextBackgroundLightningTime = 0;
+        private bool wasFullyCharged = false;
+
+        // Background lightning bolt data
+        private class BackgroundLightningBolt
+        {
+            public List<Vector2> Points;
+            public int Timer;
+            public int MaxTimer;
+
+            public BackgroundLightningBolt()
+            {
+                Points = new List<Vector2>();
+            }
+        }
 
         // Lightning bolt data structure
         private class LightningBolt
@@ -207,7 +306,50 @@ namespace DasherClass.Projectiles
             lightningTimer = 0;
             activeLightningBolts.Clear();
             hitNPCs.Clear();
+            backgroundLightning.Clear();
+            wasFullyCharged = false;
             base.PerformLunge();
+        }
+
+        internal override void HandleChargingProjectileVisuals()
+        {
+            base.HandleChargingProjectileVisuals();
+
+            bool isFullyCharged = currentChargeTime >= ChargeTime;
+
+            // Handle background lightning when fully charged
+            if (isFullyCharged)
+            {
+                // Play thunder sound on first frame of being fully charged
+                if (!wasFullyCharged)
+                {
+                    wasFullyCharged = true;
+                    float pitch = -ThunderPitchVariance + Main.rand.NextFloat() * (ThunderPitchVariance * 2f);
+                    SoundEngine.PlaySound(SoundID.Thunder with { Volume = ThunderVolume * 0.6f, Pitch = pitch + 0.2f }, Owner.Center);
+                    nextBackgroundLightningTime = 0; // Spawn lightning immediately
+                }
+
+                // Update background lightning timers
+                for (int i = backgroundLightning.Count - 1; i >= 0; i--)
+                {
+                    backgroundLightning[i].Timer--;
+                    if (backgroundLightning[i].Timer <= 0)
+                    {
+                        backgroundLightning.RemoveAt(i);
+                    }
+                }
+
+                // Spawn new background lightning
+                if (nextBackgroundLightningTime <= 0)
+                {
+                    SpawnBackgroundLightning();
+                    nextBackgroundLightningTime = Main.rand.Next(BackgroundLightningIntervalMin, BackgroundLightningIntervalMax + 1);
+                }
+                else
+                {
+                    nextBackgroundLightningTime--;
+                }
+            }
         }
 
         internal override void HandleProjectileVisuals()
@@ -439,14 +581,14 @@ namespace DasherClass.Projectiles
             for (int i = 0; i < ImpactDustCount; i++)
             {
                 Vector2 velocity = Main.rand.NextVector2Circular(DustSpreadSpeed, DustSpreadSpeed);
-                Dust dust = Dust.NewDustDirect(position, 0, 0, DustID.Electric, velocity.X, velocity.Y, 100, default, DustScale * 1.2f);
+                Dust dust = Dust.NewDustDirect(position, 0, 0, DustID.GemDiamond, velocity.X, velocity.Y, 100, ImpactDustColor, DustScale * 1.2f);
                 dust.noGravity = true;
                 dust.fadeIn = 1.2f;
 
-                // Also spawn some blue/purple tinted dust
+                // Also spawn some secondary colored dust
                 if (i % 3 == 0)
                 {
-                    Dust dust2 = Dust.NewDustDirect(position, 0, 0, DustID.BlueTorch, velocity.X * 0.8f, velocity.Y * 0.8f, 150, default, DustScale);
+                    Dust dust2 = Dust.NewDustDirect(position, 0, 0, DustID.GemDiamond, velocity.X * 0.8f, velocity.Y * 0.8f, 150, ImpactDustSecondaryColor, DustScale);
                     dust2.noGravity = true;
                 }
             }
@@ -454,7 +596,7 @@ namespace DasherClass.Projectiles
             // Bright flash at endpoint
             for (int i = 0; i < 5; i++)
             {
-                Dust flash = Dust.NewDustDirect(position - new Vector2(EndpointFlashRadius / 2), (int)EndpointFlashRadius, (int)EndpointFlashRadius, DustID.WhiteTorch, 0, 0, 0, default, DustScale * 2f);
+                Dust flash = Dust.NewDustDirect(position - new Vector2(EndpointFlashRadius / 2), (int)EndpointFlashRadius, (int)EndpointFlashRadius, DustID.GemDiamond, 0, 0, 0, LightningCoreColor, DustScale * 2f);
                 flash.noGravity = true;
                 flash.velocity *= 0.3f;
             }
@@ -473,7 +615,7 @@ namespace DasherClass.Projectiles
                     Vector2 pos = Vector2.Lerp(segStart, segEnd, t);
                     Vector2 velocity = Main.rand.NextVector2Circular(2f, 2f);
 
-                    Dust dust = Dust.NewDustDirect(pos, 0, 0, DustID.Electric, velocity.X, velocity.Y, 100, default, DustScale * (1f - bolt.Depth * 0.2f));
+                    Dust dust = Dust.NewDustDirect(pos, 0, 0, DustID.GemDiamond, velocity.X, velocity.Y, 100, LightningDustColor, DustScale * (1f - bolt.Depth * 0.2f));
                     dust.noGravity = true;
                 }
             }
@@ -484,7 +626,7 @@ namespace DasherClass.Projectiles
             for (int i = 0; i < 15; i++)
             {
                 Vector2 velocity = Main.rand.NextVector2Circular(5f, 5f);
-                Dust dust = Dust.NewDustDirect(position, 0, 0, DustID.Electric, velocity.X, velocity.Y, 100, default, DustScale);
+                Dust dust = Dust.NewDustDirect(position, 0, 0, DustID.GemDiamond, velocity.X, velocity.Y, 100, HitDustColor, DustScale);
                 dust.noGravity = true;
             }
         }
@@ -493,6 +635,18 @@ namespace DasherClass.Projectiles
 
         public override bool PreDraw(ref Color lightColor)
         {
+            // Draw background lightning (when charging and fully charged)
+            if (backgroundLightning.Count > 0)
+            {
+                DrawBackgroundLightning();
+            }
+
+            // Draw charging glow effect
+            if (!isMidlunge && currentChargeTime > 0)
+            {
+                DrawChargingGlow();
+            }
+
             // Draw lightning effect behind the projectile
             if (lightningTimer > 0 && activeLightningBolts.Count > 0)
             {
@@ -514,6 +668,167 @@ namespace DasherClass.Projectiles
             }
             Main.EntitySpriteDraw(punchTexture, Projectile.Center - Main.screenPosition, frame, lightColor, Projectile.rotation, origin, Projectile.scale, directionEffect, 0);
             return false;
+        }
+
+        private void DrawChargingGlow()
+        {
+            float chargeProgress = Math.Clamp(currentChargeTime / ChargeTime, 0f, 1f);
+            bool isFullyCharged = chargeProgress >= 1f;
+
+            // Calculate base glow intensity from charge progress (ease in)
+            float glowIntensity = MathF.Pow(chargeProgress, 2f);
+
+            // Apply charged boost and fluctuation
+            if (isFullyCharged)
+            {
+                // Fluctuating glow when fully charged
+                float time = (float)Main.GameUpdateCount * ChargedGlowFluctuationSpeed * 0.1f;
+                float fluctuation = 1f + MathF.Sin(time) * ChargedGlowFluctuationAmount;
+                float fluctuation2 = 1f + MathF.Sin(time * 1.7f + 1.3f) * ChargedGlowFluctuationAmount * 0.5f;
+                glowIntensity *= ChargedGlowBoostMultiplier * fluctuation * fluctuation2;
+            }
+
+            // Get the projectile texture and frame
+            Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
+            Rectangle frame = texture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
+            Vector2 origin = frame.Size() * 0.5f;
+            Vector2 drawPos = Projectile.Center - Main.screenPosition;
+
+            SpriteEffects directionEffect = Owner.direction == 1 ? SpriteEffects.FlipVertically : SpriteEffects.None;
+
+            // Calculate glow alpha
+            float glowAlpha = MathHelper.Lerp(ChargingGlowAlphaMin, ChargingGlowAlphaMax, glowIntensity);
+
+            // Calculate scale boost for the glow layers
+            float scaleBoost = MathHelper.Lerp(ChargingGlowScaleMin, ChargingGlowScaleMax, chargeProgress);
+            if (isFullyCharged)
+            {
+                float time = (float)Main.GameUpdateCount * ChargedGlowFluctuationSpeed * 0.1f;
+                scaleBoost *= 1f + MathF.Sin(time * 0.8f + 0.5f) * ChargedGlowFluctuationAmount * 0.2f;
+            }
+
+            // Draw multiple glow layers using the projectile sprite itself
+            int layers = isFullyCharged ? 5 : 3;
+            for (int layer = layers - 1; layer >= 0; layer--)
+            {
+                float layerProgress = (float)layer / Math.Max(layers - 1, 1);
+
+                // Outer layers are larger and more transparent
+                float layerScale = Projectile.scale * (1f + scaleBoost * (0.3f + layerProgress * 0.7f));
+                float layerAlpha = glowAlpha * (1f - layerProgress * 0.6f);
+
+                // Interpolate color from inner to outer
+                Color layerColor = Color.Lerp(ChargingGlowColorInner, ChargingGlowColorOuter, layerProgress);
+                layerColor = layerColor * layerAlpha;
+
+                Main.EntitySpriteDraw(
+                    texture,
+                    drawPos,
+                    frame,
+                    layerColor,
+                    Projectile.rotation,
+                    origin,
+                    layerScale,
+                    directionEffect,
+                    0
+                );
+            }
+
+            // Draw extra bright core layer when fully charged
+            if (isFullyCharged)
+            {
+                float time = (float)Main.GameUpdateCount * ChargedGlowFluctuationSpeed * 0.1f;
+                float coreFluctuation = 0.7f + MathF.Sin(time * 2f) * 0.3f;
+                float coreAlpha = 0.4f * coreFluctuation * glowIntensity;
+
+                Color coreColor = LightningCoreColor * coreAlpha;
+
+                Main.EntitySpriteDraw(
+                    texture,
+                    drawPos,
+                    frame,
+                    coreColor,
+                    Projectile.rotation,
+                    origin,
+                    Projectile.scale * 1.05f,
+                    directionEffect,
+                    0
+                );
+            }
+        }
+
+        private void SpawnBackgroundLightning()
+        {
+            // Pick a random position around the player
+            float angle = Main.rand.NextFloat() * MathHelper.TwoPi;
+            float distance = Main.rand.NextFloat(BackgroundLightningRadius * 0.3f, BackgroundLightningRadius);
+            Vector2 startPos = Owner.Center + angle.ToRotationVector2() * distance;
+
+            // Lightning goes in a generally downward direction with some randomness
+            float lightningAngle = MathHelper.PiOver2 + (Main.rand.NextFloat() - 0.5f) * 1.2f;
+            float length = Main.rand.NextFloat(BackgroundLightningLengthMin, BackgroundLightningLengthMax);
+            Vector2 endPos = startPos + lightningAngle.ToRotationVector2() * length;
+
+            // Generate the bolt
+            BackgroundLightningBolt bolt = new BackgroundLightningBolt();
+            bolt.Timer = BackgroundLightningDuration;
+            bolt.MaxTimer = BackgroundLightningDuration;
+            bolt.Points.Add(startPos);
+
+            Vector2 direction = endPos - startPos;
+            float boltLength = direction.Length();
+            Vector2 normalizedDir = direction / boltLength;
+            Vector2 perpendicular = new Vector2(-normalizedDir.Y, normalizedDir.X);
+
+            // Simple jagged path
+            for (int i = 1; i < BackgroundLightningSegments; i++)
+            {
+                float t = (float)i / BackgroundLightningSegments;
+                Vector2 basePos = Vector2.Lerp(startPos, endPos, t);
+                float offset = (Main.rand.NextFloat() * 2f - 1f) * BackgroundLightningJaggedness * (1f - MathF.Pow(t - 0.5f, 2f) * 2f);
+                bolt.Points.Add(basePos + perpendicular * offset);
+            }
+            bolt.Points.Add(endPos);
+
+            backgroundLightning.Add(bolt);
+
+            // Play a quieter thunder sound
+            if (Main.rand.NextFloat() < 0.3f)
+            {
+                float pitch = 0.3f + Main.rand.NextFloat() * 0.4f;
+                SoundEngine.PlaySound(SoundID.Thunder with { Volume = ThunderVolume * 0.25f, Pitch = pitch }, startPos);
+            }
+        }
+
+        private void DrawBackgroundLightning()
+        {
+            Texture2D pixel = Terraria.GameContent.TextureAssets.MagicPixel.Value;
+
+            foreach (var bolt in backgroundLightning)
+            {
+                float fade = (float)bolt.Timer / bolt.MaxTimer;
+                float fadeEased = MathF.Pow(fade, 0.3f);
+
+                for (int i = 0; i < bolt.Points.Count - 1; i++)
+                {
+                    Vector2 start = bolt.Points[i] - Main.screenPosition;
+                    Vector2 end = bolt.Points[i + 1] - Main.screenPosition;
+
+                    Vector2 direction = end - start;
+                    float length = direction.Length();
+                    float rotation = direction.ToRotation();
+
+                    // Draw glow
+                    Color glowColor = LightningGlowColor;
+                    glowColor.A = (byte)(glowColor.A * fadeEased * BackgroundLightningAlpha * 0.5f);
+                    DrawLightningSegment(pixel, start, length, rotation, BackgroundLightningWidth * 3f * fadeEased, glowColor);
+
+                    // Draw core
+                    Color coreColor = LightningCoreColor;
+                    coreColor.A = (byte)(coreColor.A * fadeEased * BackgroundLightningAlpha);
+                    DrawLightningSegment(pixel, start, length, rotation, BackgroundLightningWidth * fadeEased, coreColor);
+                }
+            }
         }
 
         private void DrawLightningBolts()
