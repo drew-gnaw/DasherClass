@@ -13,7 +13,7 @@ namespace DasherClass.Projectiles
     public class LanceOfThunderDash : LanceWeaponProjectile
     {
         public override float LungeSpeed => 100f;
-        public override float ChargeTime => 600f;
+        public override float ChargeTime => 60f;
         public override float DashTime => 10f;
         public override float PullBackScale => 0.995f;
         public override float MaxPullBackRate => 0.90f;
