@@ -5,6 +5,7 @@ using Terraria.ModLoader;
 using Terraria.ID;
 using System;
 using DasherClass;
+using DasherClass.DasherPlayer;
 
 
 public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
@@ -45,6 +46,10 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
 
     public override void AI()
     {
+        if (Owner.dead)
+        {
+            Projectile.Kill();
+        }
         if (isMidlunge)
         {
             Projectile.friendly = true;
@@ -136,7 +141,9 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
                 aim = Projectile.velocity.SafeNormalize(Vector2.UnitX * Owner.direction);
 
             Owner.velocity = aim * LungeSpeed;
-            
+            DasherPlayer dasherPlayer = Owner.GetModPlayer<DasherPlayer>();
+            dasherPlayer.isLunging = true;
+            dasherPlayer.lungeSpeed = LungeSpeed;
             HasPerformedLunge = true;
         }
 
@@ -201,6 +208,8 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
                 releaseAimDirection = Vector2.Zero;
                 currentDashTime = 0f;
                 isMidlunge = false;
+                DasherPlayer dasherPlayer = Owner.GetModPlayer<DasherPlayer>();
+                dasherPlayer.isLunging = false;
                 Projectile.Kill();
             }
         }
