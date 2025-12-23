@@ -47,6 +47,7 @@ namespace DasherClass.Projectiles
         public override void AI()
         {
             // spawn a little dust trail
+            Lighting.AddLight(Projectile.Center, 0.3f, 0.1f, 0.4f);
             if (Main.rand.NextBool(2))
             {
                 Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.SpectreStaff);
