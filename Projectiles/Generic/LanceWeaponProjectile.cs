@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using DasherClass.DasherPlayer;
 using Microsoft.Xna.Framework;
 using Terraria;
 
@@ -8,8 +9,10 @@ public abstract class LanceWeaponProjectile : DashWeaponProjectile
 
     internal override void PerformLunge()
     {
-        Owner.maxFallSpeed = 0f;
         base.PerformLunge();
+        DasherPlayer dasherPlayer = Owner.GetModPlayer<DasherPlayer>();
+        dasherPlayer.lanceLungeGravity = 0f;
+        dasherPlayer.isLance = true;
     }   
 
     internal override void HandleProjectileVisuals()
@@ -17,7 +20,6 @@ public abstract class LanceWeaponProjectile : DashWeaponProjectile
         if (currentDashTime >= DashTime)
         {
             Owner.velocity *= EndOfLungeVelocityScale;
-            Owner.maxFallSpeed = 10f; // default max fall speed
         }
         base.HandleProjectileVisuals();
     }

@@ -19,6 +19,8 @@ namespace DasherClass.Projectiles
         public override int OnHitIFrames => 15;
         public override float HoldMinRadius => 67f;
         public override float HoldMaxRadius => 80f;
+        public override float ChargingFrameDelay => 7f;
+        public override float LungingFrameDelay => 6f;
 
         // consts specific to Ethereal Lance: charge stages
         public const int MaxChargeStages = 10;

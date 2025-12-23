@@ -19,6 +19,8 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
 
     public abstract float HoldMinRadius { get; }
     public abstract float HoldMaxRadius { get; }
+    public abstract float ChargingFrameDelay { get; }
+    public abstract float LungingFrameDelay { get; }
 
     public new string LocalizationCategory => "Projectiles";
     public Player Owner => Main.player[Projectile.owner];
@@ -156,9 +158,8 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
 
             // Simple frame timer: advance `Projectile.frame` every `frameDelay` ticks.
-            int frameDelay = 10;
             Projectile.frameCounter++;
-            if (Projectile.frameCounter >= frameDelay)
+            if (Projectile.frameCounter >= ChargingFrameDelay)
             {
                 Projectile.frameCounter = 0;
                 Projectile.frame++;
@@ -190,9 +191,9 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
             Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
 
-            int frameDelay = 10;
+
             Projectile.frameCounter++;
-            if (Projectile.frameCounter >= frameDelay)
+            if (Projectile.frameCounter >= LungingFrameDelay)
             {
                 Projectile.frameCounter = 0;
                 Projectile.frame++;
@@ -210,6 +211,7 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
                 isMidlunge = false;
                 DasherPlayer dasherPlayer = Owner.GetModPlayer<DasherPlayer>();
                 dasherPlayer.isLunging = false;
+                dasherPlayer.isLance = false;
                 Projectile.Kill();
             }
         }
