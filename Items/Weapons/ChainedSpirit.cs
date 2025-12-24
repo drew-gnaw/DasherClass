@@ -14,7 +14,7 @@ namespace DasherClass.Items.Weapons
         public override void SetDefaults()
         {
             Item.width = Item.height = 40;
-            Item.damage = 100;
+            Item.damage = 65;
             Item.DamageType = DasherDamageClass.Instance;
             Item.noMelee = true;
             Item.noUseGraphic = true;

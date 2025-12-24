@@ -21,6 +21,11 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
     public abstract float HoldMaxRadius { get; }
     public abstract float ChargingFrameDelay { get; }
     public abstract float LungingFrameDelay { get; }
+    public abstract float LungingMinRadius { get; }
+    public abstract float LungingMaxRadius { get; }
+    public abstract int FrameDelay { get; }
+    public abstract bool CycleLungingSprite { get; }
+    public abstract bool CycleChargingSprite { get; }
 
     public new string LocalizationCategory => "Projectiles";
     public Player Owner => Main.player[Projectile.owner];
@@ -164,7 +169,15 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
                 Projectile.frameCounter = 0;
                 Projectile.frame++;
                 if (Projectile.frame >= Main.projFrames[Projectile.type])
-                    Projectile.frame = 0;
+                {
+                    if (CycleChargingSprite)
+                    {
+                        Projectile.frame = 0;
+                    } else
+                    {
+                        Projectile.frame = Main.projFrames[Projectile.type] - 1;
+                    }
+                }
             }
         }
 
@@ -198,7 +211,15 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
                 Projectile.frameCounter = 0;
                 Projectile.frame++;
                 if (Projectile.frame >= Main.projFrames[Projectile.type])
-                    Projectile.frame = 0;
+                {
+                    if (CycleLungingSprite)
+                    {
+                        Projectile.frame = 0;
+                    } else
+                    {
+                        Projectile.frame = Main.projFrames[Projectile.type] - 1;
+                    }
+                }
             }
             if (currentDashTime < DashTime)
             {
@@ -223,8 +244,8 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             if (aimDirection == Vector2.Zero)
                 aimDirection = Vector2.UnitX * Owner.direction;
 
-            float minRadius = 23f;
-            float maxRadius = 38f;
+            float minRadius = LungingMinRadius;
+            float maxRadius = LungingMaxRadius;
             float t = Math.Abs(aimDirection.Y);
             float radius = MathHelper.Lerp(minRadius, maxRadius, t);
             Projectile.Center += aimDirection * radius;
