@@ -19,6 +19,11 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
 
     public abstract float HoldMinRadius { get; }
     public abstract float HoldMaxRadius { get; }
+    public abstract float LungingMinRadius { get; }
+    public abstract float LungingMaxRadius { get; }
+    public abstract int FrameDelay { get; }
+    public abstract bool CycleLungingSprite { get; }
+    public abstract bool CycleChargingSprite { get; }
 
     public new string LocalizationCategory => "Projectiles";
     public Player Owner => Main.player[Projectile.owner];
@@ -156,14 +161,21 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
 
             // Simple frame timer: advance `Projectile.frame` every `frameDelay` ticks.
-            int frameDelay = 10;
             Projectile.frameCounter++;
-            if (Projectile.frameCounter >= frameDelay)
+            if (Projectile.frameCounter >= FrameDelay)
             {
                 Projectile.frameCounter = 0;
                 Projectile.frame++;
                 if (Projectile.frame >= Main.projFrames[Projectile.type])
-                    Projectile.frame = 0;
+                {
+                    if (CycleChargingSprite)
+                    {
+                        Projectile.frame = 0;
+                    } else
+                    {
+                        Projectile.frame = Main.projFrames[Projectile.type] - 1;
+                    }
+                }
             }
         }
 
@@ -190,14 +202,21 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
             Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
 
-            int frameDelay = 10;
             Projectile.frameCounter++;
-            if (Projectile.frameCounter >= frameDelay)
+            if (Projectile.frameCounter >= FrameDelay)
             {
                 Projectile.frameCounter = 0;
                 Projectile.frame++;
                 if (Projectile.frame >= Main.projFrames[Projectile.type])
-                    Projectile.frame = 0;
+                {
+                    if (CycleLungingSprite)
+                    {
+                        Projectile.frame = 0;
+                    } else
+                    {
+                        Projectile.frame = Main.projFrames[Projectile.type] - 1;
+                    }
+                }
             }
             if (currentDashTime < DashTime)
             {
@@ -221,8 +240,8 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             if (aimDirection == Vector2.Zero)
                 aimDirection = Vector2.UnitX * Owner.direction;
 
-            float minRadius = 23f;
-            float maxRadius = 38f;
+            float minRadius = LungingMinRadius;
+            float maxRadius = LungingMaxRadius;
             float t = Math.Abs(aimDirection.Y);
             float radius = MathHelper.Lerp(minRadius, maxRadius, t);
             Projectile.Center += aimDirection * radius;

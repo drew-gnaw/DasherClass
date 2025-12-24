@@ -22,3 +22,8 @@ ChainedSpirit: {
 	Tooltip: ""
 	DisplayName: Chained Spirit
 }
+
+NightsVeil: {
+	DisplayName: Nights Veil
+	Tooltip: Conjures up the power of the night
+}

@@ -4,7 +4,7 @@ using Terraria;
 
 public abstract class ShieldWeaponProjectile : DashWeaponProjectile
 {
-    internal void ReelBack()
+    public virtual void ReelBack()
     {
         Owner.GiveUniversalIFrames(OnHitIFrames);
 
@@ -16,7 +16,6 @@ public abstract class ShieldWeaponProjectile : DashWeaponProjectile
 
         // Create on-hit tile dust.
         Collision.HitTiles(Projectile.position, Projectile.velocity, Projectile.width + 16, Projectile.height + 16);
-        Projectile.Kill();
     }
 
     #region NPC Hit Collision Logic

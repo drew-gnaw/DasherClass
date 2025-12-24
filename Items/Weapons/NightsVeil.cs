@@ -26,7 +26,7 @@ namespace DasherClass.Items.Weapons
             Item.UseSound = SoundID.Item1;
             Item.autoReuse = true;
             Item.value = Item.buyPrice(gold: 10);
-            Item.shoot = ModContent.ProjectileType<ChainedSpiritDash>();
+            Item.shoot = ModContent.ProjectileType<NightsVeilDash>();
             Item.shootSpeed = 1f;
             Item.rare = ItemRarityID.Red;
         }

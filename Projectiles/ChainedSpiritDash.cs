@@ -16,6 +16,11 @@ namespace DasherClass.Projectiles
         public override int OnHitIFrames => 60;
         public override float HoldMinRadius => 23f;
         public override float HoldMaxRadius => 38f;
+        public override float LungingMinRadius => 23f;
+        public override float LungingMaxRadius => 38f;
+        public override int FrameDelay => 3;
+        public override bool CycleChargingSprite => true;
+        public override bool CycleLungingSprite => true;
 
         public override void SetStaticDefaults()
         {
