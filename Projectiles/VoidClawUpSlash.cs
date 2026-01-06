@@ -1,6 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -9,7 +14,12 @@ namespace DasherClass.Projectiles
     public class VoidClawUpSlash : ModProjectile, ILocalizedModType
     {
         public new string LocalizationCategory => "Projectiles";
-
+        public bool isHit = false;
+        public Vector2 targetPosition;
+        public float totalSlashTime;
+        public float totalWindUpTime;
+        public Player Owner => Main.player[Projectile.owner];
+        public int originalDirection;
         public override void SetStaticDefaults()
         {
             Main.projFrames[Projectile.type] = 1;
@@ -19,20 +29,45 @@ namespace DasherClass.Projectiles
         {
             Projectile.width = 36;
             Projectile.height = 48;
+            Projectile.scale = 1.8f;
             Projectile.friendly = true;
-            Projectile.penetrate = 1;
+            Projectile.penetrate = -1;
             Projectile.tileCollide = false;
             Projectile.DamageType = DasherDamageClass.Instance;
-            Projectile.timeLeft = 60;
+            Projectile.timeLeft = 50;
             Projectile.ignoreWater = true;
+        }
+        public override void OnSpawn(IEntitySource source)
+        {
+            base.OnSpawn(source);
+            targetPosition = Projectile.position;
+            totalWindUpTime = Projectile.timeLeft * 0.2f;
+            totalSlashTime = Projectile.timeLeft * 0.8f;
+            if(Owner.direction == 1)
+            {
+                Projectile.position += new Vector2(-20, 40);
+                Projectile.rotation += MathHelper.Pi / 4 + MathHelper.Pi / 8;
+                Projectile.spriteDirection = -1;
+                originalDirection = 1;
+            } else
+            {
+                Projectile.position += new Vector2(20, 40);
+                Projectile.rotation -= MathHelper.Pi / 4 + MathHelper.Pi / 8;
+                Projectile.spriteDirection = 1;
+                originalDirection = -1;
+            }
         }
 
         public override void AI()
         {
-            UpSlash();
-
-            Lighting.AddLight(Projectile.Center, 0.25f, 0.08f, 0.35f);
-
+            Lighting.AddLight(Projectile.Center, 0.67f, 0.08f, 0.41f);
+            if(Projectile.timeLeft > totalSlashTime)
+            {
+                WindUp();
+            } else
+            {
+                UpSlash();
+            }
             if (Main.rand.NextBool(3))
             {
                 Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Shadowflame);
@@ -42,36 +77,49 @@ namespace DasherClass.Projectiles
             }
         }
 
+        public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+        {
+            base.OnHitNPC(target, hit, damageDone);
+            target.AddBuff(BuffID.ShadowFlame, 300);
+        }
+
+        public float CresentSlashXOffset(float t)
+        {
+            if(originalDirection == 1)
+            {
+                t = 1 - t;
+            }
+            float curve = (float)Math.Cos(t * MathHelper.Pi);
+            return -curve * 1.8f; 
+        }
+
         public void UpSlash()
         {
-            Player player = Main.player[Projectile.owner];
-
-            // Initialize on first tick: store start angle and life
-            if (Projectile.localAI[0] == 0f)
-            {
-                Projectile.localAI[0] = 1f; // initialized
-                float baseUp = -MathHelper.PiOver2;
-                float startAngle = baseUp - MathHelper.ToRadians(60f) * player.direction;
-                Projectile.ai[0] = startAngle; // starting angle
-                Projectile.ai[1] = 0f; // elapsed ticks
-                Projectile.localAI[1] = Projectile.timeLeft; // total life
-            }
-
-            // Advance elapsed and compute interpolation (0 -> 1) over projectile life
-            Projectile.ai[1] += 1f;
-            float elapsed = Projectile.ai[1];
-            float life = Projectile.localAI[1] > 0f ? Projectile.localAI[1] : 60f;
-            float t = MathHelper.Clamp(elapsed / life, 0f, 1f);
-
-            // Sweep ~120 degrees around the player (mirrored by facing)
-            float sweep = MathHelper.ToRadians(120f) * player.direction;
-            float angle = Projectile.ai[0] + sweep * t;
-            float radius = 48f;
-
-            Vector2 offset = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * radius;
-            Projectile.Center = player.MountedCenter + offset;
-            Projectile.rotation = angle + MathHelper.PiOver2;
+            float t = (totalSlashTime - Projectile.timeLeft) / totalSlashTime; // 1.5 = 50% faster
+            t = MathHelper.Clamp(t, 0f, 1f); 
+            float x = CresentSlashXOffset(t);
+            float y = MathHelper.Lerp(-1, -1.2f, (float)Math.Pow(3.0, t));
+            float rotation = MathHelper.Lerp(MathHelper.ToRadians(0), MathHelper.ToRadians(8), t*t);
+            Projectile.rotation += HandleRotationDirection(rotation);
+            Console.WriteLine("(UPSLASH)current rotation: " + Projectile.rotation);
+            Projectile.position += new Vector2(x , y) * 3.5f;
             Projectile.velocity = Vector2.Zero;
+        }
+
+        public void WindUp()
+        {
+            float t = (totalWindUpTime - (Projectile.timeLeft * 0.2f)) / totalWindUpTime;
+            float y = MathHelper.Lerp(-1, -2, t);
+            float rotation = MathHelper.Lerp(MathHelper.ToRadians(0), MathHelper.ToRadians(7), t);
+            Projectile.rotation -= HandleRotationDirection(rotation);
+            Console.WriteLine("(WINDUP)current rotation: " + Projectile.rotation);
+            Projectile.position -= new Vector2(0 , y) * 3.5f;
+            Projectile.velocity = Vector2.Zero;
+        }
+
+        public float HandleRotationDirection(float rotation) 
+        {
+            return originalDirection == 1 ? -rotation : rotation;
         }
     }
 }

@@ -1,15 +1,22 @@
 using System;
 using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
+
 
 namespace DasherClass.Projectiles
 {
     public class VoidUpSlash : ModProjectile, ILocalizedModType
     {
         public new string LocalizationCategory => "Projectiles";
-        public int holdFrameCount = 30;
+        public int holdFrameCount = 10;
+        public int holdPerFrame = 3;
+        public int holdPerFrameCounter;
+        public int startHoldFrames = 15;
+        public Vector2 targetPosition;
+        public Player Owner => Main.player[Projectile.owner];
 
         public override void SetStaticDefaults()
         {
@@ -18,7 +25,7 @@ namespace DasherClass.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.scale = 1.7f;
+            Projectile.scale = 1.8f;
             Projectile.width = Projectile.height = (int)(Projectile.scale * 60f);
             Projectile.friendly = true;
             Projectile.penetrate = -1;
@@ -27,65 +34,68 @@ namespace DasherClass.Projectiles
             Projectile.ignoreWater = true;
         }
 
-        public override void AI()
+        public override void OnSpawn(IEntitySource source)
         {
-            UpSlash();
-            
-            Lighting.AddLight(Projectile.Center, 0.35f, 0.12f, 0.45f);
-
-            if (Main.rand.NextBool(4))
+            base.OnSpawn(source);
+            targetPosition = Projectile.position;
+            Projectile.position += new Vector2(28, 20);
+            holdPerFrameCounter = holdPerFrame;
+            if(Owner.direction == 1)
             {
-                Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Shadowflame);
-                d.noGravity = true;
-                d.scale = 1.0f;
-                d.velocity *= 0.1f;
-            }
-            // Animate frames
-
-            Projectile.frame = Projectile.frameCounter;
-            if(Projectile.frameCounter == 8 && holdFrameCount > 0)
+                Projectile.spriteDirection = -1;
+                Projectile.position += new Vector2(-32, 20);
+            } else
             {
-                holdFrameCount--;
-                Projectile.frame = Projectile.frameCounter;
-                return;
-            }
-            Projectile.frameCounter++;
-            if (Projectile.frame >= Main.projFrames[Projectile.type])
-            {
-                Projectile.Kill();
+                Projectile.spriteDirection = 1;
+                Projectile.position += new Vector2(27, 20);
             }
         }
 
-        public void UpSlash()
+        public override void AI()
         {
-            Player player = Main.player[Projectile.owner];
-
-            // Initialize on first tick: store start angle and life
-            if (Projectile.localAI[0] == 0f)
+            Lighting.AddLight(Projectile.Center, 0.67f, 0.08f, 0.41f);
+            if (Main.rand.NextBool(3))
             {
-                Projectile.localAI[0] = 1f; // initialized
-                float baseUp = -MathHelper.PiOver2;
-                float startAngle = baseUp - MathHelper.ToRadians(60f) * player.direction;
-                Projectile.ai[0] = startAngle; // starting angle
-                Projectile.ai[1] = 0f; // elapsed ticks
-                Projectile.localAI[1] = Projectile.timeLeft; // total life
+                Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.Shadowflame);
+                d.noGravity = true;
+                d.scale = 0.9f;
+                d.velocity *= 0.2f;
             }
-
-            // Advance elapsed and compute interpolation (0 -> 1) over projectile life
-            Projectile.ai[1] += 1f;
-            float elapsed = Projectile.ai[1];
-            float life = Projectile.localAI[1] > 0f ? Projectile.localAI[1] : 60f;
-            float t = MathHelper.Clamp(elapsed / life, 0f, 1f);
-
-            // Sweep ~120 degrees around the player (mirrored by facing)
-            float sweep = MathHelper.ToRadians(120f) * player.direction;
-            float angle = Projectile.ai[0] + sweep * t;
-            float radius = 48f;
-
-            Vector2 offset = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * radius;
-            Projectile.Center = player.MountedCenter + offset;
-            Projectile.rotation = angle + MathHelper.PiOver2;
+            if(startHoldFrames > 0)
+            {
+                startHoldFrames--;
+                Projectile.velocity = Vector2.Zero;
+                Projectile.hide = true;
+                return;
+            } else
+            {
+                Projectile.hide = false;
+            }
+            if(holdPerFrameCounter > 0)
+            {
+                holdPerFrameCounter--;
+            } else {
+                Projectile.frame = Projectile.frameCounter;
+                holdPerFrameCounter = holdPerFrame;
+                if(Projectile.frameCounter == 8 && holdFrameCount > 0)
+                {
+                    holdFrameCount--;
+                    Projectile.frame = Projectile.frameCounter;
+                    return;
+                }
+                Projectile.frameCounter++;
+                if (Projectile.frame >= Main.projFrames[Projectile.type])
+                {
+                    Projectile.Kill();
+                }
+            }
             Projectile.velocity = Vector2.Zero;
+        }
+
+        public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+        {
+            base.OnHitNPC(target, hit, damageDone);
+            target.AddBuff(BuffID.ShadowFlame, 300);
         }
     }
 }
