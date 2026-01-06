@@ -1,4 +1,5 @@
 using System;
+using Humanizer;
 using Microsoft.Build.Evaluation;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -52,7 +53,6 @@ namespace DasherClass.Projectiles
             base.AI();
             if (isMidlunge)
             {
-                Console.WriteLine(LungingMinRadius);
                 Projectile.type = ModContent.ProjectileType<VoidClaw>();
                 Projectile.scale = 1.5f;
                 Main.projFrames[Projectile.type] = 10;
