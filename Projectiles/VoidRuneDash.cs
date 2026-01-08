@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Humanizer;
 using Microsoft.Build.Evaluation;
 using Microsoft.Xna.Framework;
@@ -10,34 +11,41 @@ using Terraria.ModLoader;
 
 namespace DasherClass.Projectiles
 {
-    public class NightsVeilDash : ShieldWeaponProjectile
+    public class VoidRuneDash : ShieldWeaponProjectile
     {
-        public override float LungeSpeed => 15f;
-        public override float ChargeTime => 30f;
+        public override float LungeSpeed => 17f;
+        public override float ChargeTime => 64f;
         public override float DashTime => 30f;
-        public override float PullBackScale => 0.997f;
-        public override float MaxPullBackRate => 0.85f;
+        public override float PullBackScale => 1.0f; // No pullback 
+        public override float MaxPullBackRate => 1.0f;
         public override int OnHitIFrames => 30;
-        public override float HoldMinRadius => 21f;
-        public override float HoldMaxRadius => 35f;
-        public override float LungingMinRadius => 35f;
-        public override float LungingMaxRadius => 45f;
+        public override float HoldMinRadius => 25f;
+        public override float HoldMaxRadius => 40f;
+        public override float LungingMinRadius => 40f;
+        public override float LungingMaxRadius => 50f;
         public override int FrameDelay => 2;
-        public override bool CycleChargingSprite => true;
+        public override bool CycleChargingSprite => false;
         public override bool CycleLungingSprite => false;
         public int voidClawIndex = -1;
         public int voidCrystalIndex = -1;
         public bool onReelback = false;
+        public int holdFrameCount = 8;
+        public int holdFrameCounter = 8;
+        public int slashUpSlashIndex = -1;
+        public int clawUpSlashIndex = -1;
+        public bool isFramesReset = false;
+        public int[] KEYFRAMES = [4, 11, 16, 17];
 
         public override void SetStaticDefaults()
         {
-            Main.projFrames[Projectile.type] = 3;
+            Main.projFrames[Projectile.type] = 20; //Key frames are 4, 10, 15, 19
         }
 
         public override void SetDefaults()
         {
             Projectile.scale = 1.0f;
-            Projectile.width = Projectile.height = (int)(Projectile.scale * 30f);
+            Projectile.width = 23;
+            Projectile.height = 56;
             Projectile.friendly = true;
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;
@@ -53,9 +61,14 @@ namespace DasherClass.Projectiles
             base.AI();
             if (isMidlunge)
             {
+                if (!isFramesReset)
+                {
+                    Projectile.frame = 0;
+                }
                 Projectile.type = ModContent.ProjectileType<VoidClaw>();
                 Projectile.scale = 1.5f;
-                Main.projFrames[Projectile.type] = 10;
+                Main.projFrames[Projectile.type] = 13;
+                isFramesReset = true;
             }
             if (voidCrystalIndex == -1)
             {
@@ -88,14 +101,43 @@ namespace DasherClass.Projectiles
             base.OnKill(timeLeft);
         }
 
+        internal override void HandleChargingProjectileVisuals()
+        {
+            if (KEYFRAMES.Contains(Projectile.frame))
+            {
+                float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
+                Projectile.rotation = velocityAngle + MathHelper.Pi;
+                // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
+                Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
+
+                if (holdFrameCounter > 0)
+                {
+                    holdFrameCounter--;
+                    return;
+                } else
+                {
+                    Projectile.frameCounter++;
+                    Projectile.frame++;
+                    holdFrameCounter = holdFrameCount;
+                }
+
+            } else
+            {
+                base.HandleChargingProjectileVisuals();
+            }
+        }
+
         public void SpawnUpSlash(NPC target)
         {
-            Vector2 clawSpawnPos = target.Center + new Vector2(0, Projectile.height * 0.5f + 3f);
-            Vector2 slashSpawnPos = target.Center + new Vector2(0, Projectile.height * 0.5f + 8f);
-            Vector2 slowUpVel = new Vector2(0f, -2f);
-            Vector2 fastUpVel = new Vector2(0f, -4f);
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), clawSpawnPos, fastUpVel, ModContent.ProjectileType<VoidClawUpSlash>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
-            Projectile.NewProjectile(Projectile.GetSource_FromThis(), slashSpawnPos, slowUpVel, ModContent.ProjectileType<VoidUpSlash>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
+            if(clawUpSlashIndex == -1 && slashUpSlashIndex == -1)
+            {
+                Vector2 clawSpawnPos = target.Center + new Vector2(0, Projectile.height * 0.5f + 3f);
+                Vector2 slashSpawnPos = target.Center + new Vector2(0, Projectile.height * 0.5f + 8f);
+                Vector2 slowUpVel = new Vector2(0f, -2f);
+                Vector2 fastUpVel = new Vector2(0f, -4f);
+                clawUpSlashIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), clawSpawnPos, fastUpVel, ModContent.ProjectileType<VoidClawUpSlash>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
+                slashUpSlashIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), slashSpawnPos, slowUpVel, ModContent.ProjectileType<VoidUpSlash>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
+            }
         }
 
         

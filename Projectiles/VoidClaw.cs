@@ -15,14 +15,14 @@ namespace DasherClass.Projectiles
 
         public override void SetStaticDefaults()
         {
-            Main.projFrames[Projectile.type] = 10;
+            Main.projFrames[Projectile.type] = 13;
         }
 
         public override void SetDefaults()
         {
             Projectile.width = 100;
             Projectile.height = 50;
-            Projectile.scale = 1.5f;
+            Projectile.scale = 1.4f;
             Projectile.friendly = true;
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;

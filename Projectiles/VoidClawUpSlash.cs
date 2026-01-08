@@ -29,12 +29,12 @@ namespace DasherClass.Projectiles
         {
             Projectile.width = 36;
             Projectile.height = 48;
-            Projectile.scale = 1.8f;
+            Projectile.scale = 1.2f;
             Projectile.friendly = true;
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;
             Projectile.DamageType = DasherDamageClass.Instance;
-            Projectile.timeLeft = 50;
+            Projectile.timeLeft = 20;
             Projectile.ignoreWater = true;
         }
         public override void OnSpawn(IEntitySource source)
@@ -99,10 +99,9 @@ namespace DasherClass.Projectiles
             t = MathHelper.Clamp(t, 0f, 1f); 
             float x = CresentSlashXOffset(t);
             float y = MathHelper.Lerp(-1, -1.2f, (float)Math.Pow(3.0, t));
-            float rotation = MathHelper.Lerp(MathHelper.ToRadians(0), MathHelper.ToRadians(8), t*t);
+            float rotation = MathHelper.Lerp(MathHelper.ToRadians(3), MathHelper.ToRadians(14), t*t);
             Projectile.rotation += HandleRotationDirection(rotation);
-            Console.WriteLine("(UPSLASH)current rotation: " + Projectile.rotation);
-            Projectile.position += new Vector2(x , y) * 3.5f;
+            Projectile.position += new Vector2(x , y) * 10.0f;
             Projectile.velocity = Vector2.Zero;
         }
 
@@ -110,10 +109,9 @@ namespace DasherClass.Projectiles
         {
             float t = (totalWindUpTime - (Projectile.timeLeft * 0.2f)) / totalWindUpTime;
             float y = MathHelper.Lerp(-1, -2, t);
-            float rotation = MathHelper.Lerp(MathHelper.ToRadians(0), MathHelper.ToRadians(7), t);
+            float rotation = MathHelper.Lerp(MathHelper.ToRadians(0), MathHelper.ToRadians(8), t);
             Projectile.rotation -= HandleRotationDirection(rotation);
-            Console.WriteLine("(WINDUP)current rotation: " + Projectile.rotation);
-            Projectile.position -= new Vector2(0 , y) * 3.5f;
+            Projectile.position -= new Vector2(0 , y) * 10.0f;
             Projectile.velocity = Vector2.Zero;
         }
 

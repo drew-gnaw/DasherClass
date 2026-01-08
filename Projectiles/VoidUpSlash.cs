@@ -11,8 +11,8 @@ namespace DasherClass.Projectiles
     public class VoidUpSlash : ModProjectile, ILocalizedModType
     {
         public new string LocalizationCategory => "Projectiles";
-        public int holdFrameCount = 10;
-        public int holdPerFrame = 3;
+        public int holdFrameCount = 5;
+        public int holdPerFrame = 2;
         public int holdPerFrameCounter;
         public int startHoldFrames = 15;
         public Vector2 targetPosition;
