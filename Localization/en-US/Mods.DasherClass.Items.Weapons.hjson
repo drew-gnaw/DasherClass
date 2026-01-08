@@ -23,7 +23,7 @@ ChainedSpirit: {
 	DisplayName: Chained Spirit
 }
 
-NightsVeil: {
-	DisplayName: Nights Veil
+VoidRune: {
+	DisplayName: Void Rune
 	Tooltip: Conjures up the power of the night
 }
