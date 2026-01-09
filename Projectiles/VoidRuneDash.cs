@@ -14,31 +14,30 @@ namespace DasherClass.Projectiles
     public class VoidRuneDash : ShieldWeaponProjectile
     {
         public override float LungeSpeed => 17f;
-        public override float ChargeTime => 64f;
-        public override float DashTime => 30f;
+        public override float ChargeTime => 120f;
+        public override float DashTime => 65f;
         public override float PullBackScale => 1.0f; // No pullback 
         public override float MaxPullBackRate => 1.0f;
         public override int OnHitIFrames => 30;
-        public override float HoldMinRadius => 25f;
-        public override float HoldMaxRadius => 40f;
-        public override float LungingMinRadius => 40f;
-        public override float LungingMaxRadius => 50f;
-        public override int FrameDelay => 2;
+        public override float HoldMinRadius => 55f;
+        public override float HoldMaxRadius => 75f;
+        public override float LungingMinRadius => 80f;
+        public override float LungingMaxRadius => 100f;
+        public override int FrameDelay {get; set;} = 2;
         public override bool CycleChargingSprite => false;
         public override bool CycleLungingSprite => false;
         public int voidClawIndex = -1;
         public int voidCrystalIndex = -1;
         public bool onReelback = false;
-        public int holdFrameCount = 8;
-        public int holdFrameCounter = 8;
+        public int holdFrameCount = 7;
+        public int holdFrameCounter = 7;
         public int slashUpSlashIndex = -1;
         public int clawUpSlashIndex = -1;
-        public bool isFramesReset = false;
-        public int[] KEYFRAMES = [4, 11, 16, 17];
+        public int[] KEYFRAMES = [4, 9, 14, 18];
 
         public override void SetStaticDefaults()
         {
-            Main.projFrames[Projectile.type] = 20; //Key frames are 4, 10, 15, 19
+            Main.projFrames[Projectile.type] = 62;
         }
 
         public override void SetDefaults()
@@ -61,15 +60,13 @@ namespace DasherClass.Projectiles
             base.AI();
             if (isMidlunge)
             {
-                if (!isFramesReset)
+                Projectile.width = 59;
+                if(Projectile.frame >= Main.projFrames[Projectile.type] - 1)
                 {
-                    Projectile.frame = 0;
+                    Projectile.Kill();
                 }
-                Projectile.type = ModContent.ProjectileType<VoidClaw>();
-                Projectile.scale = 1.5f;
-                Main.projFrames[Projectile.type] = 13;
-                isFramesReset = true;
             }
+            FrameDelay = frameDelayHandler();
             if (voidCrystalIndex == -1)
             {
                 voidCrystalIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), Owner.Center + new Vector2(-10, -48), Projectile.velocity * 0, ModContent.ProjectileType<VoidCrystal>(), 0, 0, Projectile.owner);
@@ -103,7 +100,18 @@ namespace DasherClass.Projectiles
 
         internal override void HandleChargingProjectileVisuals()
         {
-            if (KEYFRAMES.Contains(Projectile.frame))
+            if (Projectile.frame >= 35 && Projectile.frame <= 37)
+            {
+                float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
+                Projectile.rotation = velocityAngle + MathHelper.Pi;
+                // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
+                Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
+                if (Projectile.frame >= 37)
+                {
+                    Projectile.frame = 35;
+                }
+                Projectile.frame++;
+            } else if (KEYFRAMES.Contains(Projectile.frame))
             {
                 float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
                 Projectile.rotation = velocityAngle + MathHelper.Pi;
@@ -140,7 +148,30 @@ namespace DasherClass.Projectiles
             }
         }
 
-        
+        public int frameDelayHandler()
+        {
+            int FrameDelay;
+            if (Projectile.frame >= 0 && Projectile.frame <= 19)
+            {
+                FrameDelay = 2;
+            } else if (Projectile.frame == 20)
+            {
+                FrameDelay = 3;
+            } else if (Projectile.frame >= 21 && Projectile.frame <= 27)
+            {
+                FrameDelay = 2;
+            } else if (Projectile.frame >= 28 && Projectile.frame <= 34)
+            {
+                FrameDelay = 6;
+            } else if (Projectile.frame >= 38 && Projectile.frame <= 50)
+            {
+                FrameDelay = 1;
+            } else
+            {
+                FrameDelay = 3;
+            }
+            return FrameDelay;
+        }
 
         #region Drawing
 

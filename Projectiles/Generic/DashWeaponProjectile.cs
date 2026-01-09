@@ -21,7 +21,7 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
     public abstract float HoldMaxRadius { get; }
     public abstract float LungingMinRadius { get; }
     public abstract float LungingMaxRadius { get; }
-    public abstract int FrameDelay { get; }
+    public abstract int FrameDelay { get; set;}
     public abstract bool CycleLungingSprite { get; }
     public abstract bool CycleChargingSprite { get; }
 
