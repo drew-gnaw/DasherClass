@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -10,7 +11,7 @@ namespace DasherClass.Projectiles
     {
         public new string LocalizationCategory => "Projectiles";
         public bool isCracked = false;
-        public float chargeTime = 180f;
+        public float chargeTime = 120f;
         public float currentChargeTime = 0f;
 
         public override void SetStaticDefaults()
@@ -50,12 +51,14 @@ namespace DasherClass.Projectiles
                 d.scale = 0.8f;
             }
 
-            if (currentChargeTime > chargeTime)
+            if (!isCracked && currentChargeTime > chargeTime)
             {
                 Projectile.frame = 1;
                 isCracked = true;
+                // Crystal shard break sound when the crystal cracks
+                Terraria.Audio.SoundEngine.PlaySound(SoundID.Item28, Projectile.Center);
             }
-            else
+            else if (!isCracked)
             {
                 currentChargeTime++;
             }
@@ -69,6 +72,27 @@ namespace DasherClass.Projectiles
                 float shakeY = (float)Math.Cos(Projectile.ai[0] * 0.3f) * (shakeMag * 0.5f);
                 Projectile.Center += new Vector2(shakeX, shakeY);
             }
+        }
+
+        // Drawing
+        public override bool PreDraw(ref Color lightColor)
+        {
+            Texture2D punchTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
+            Rectangle frame = punchTexture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
+            Vector2 origin = frame.Size() * 0.5f;
+            SpriteEffects directionEffect = Projectile.spriteDirection == 1 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+
+            // Draw base sprite
+            Vector2 drawPos = Projectile.Center - Main.screenPosition;
+            Main.EntitySpriteDraw(punchTexture, drawPos, frame, lightColor, Projectile.rotation, origin, Projectile.scale, directionEffect, 0);
+
+            // Draw violet glowmask similar to VoidRuneDash
+            Texture2D glowTexture = punchTexture; // Reuse same texture for glowmask
+            Color glowColor = new Color(180, 80, 255, 80) * 0.7f; // Moderate violet, semi-transparent
+            float glowScale = Projectile.scale * 1.05f;
+            Main.EntitySpriteDraw(glowTexture, drawPos, frame, glowColor, Projectile.rotation, origin, glowScale, directionEffect, 0);
+
+            return false;
         }
     }
 }
