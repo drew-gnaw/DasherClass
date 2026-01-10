@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Humanizer;
 using Microsoft.Build.Evaluation;
@@ -14,7 +15,7 @@ namespace DasherClass.Projectiles
     public class VoidRuneDash : ShieldWeaponProjectile
     {
         public override float LungeSpeed => 17f;
-        public override float ChargeTime => 120f;
+        public override float ChargeTime => 100f;
         public override float DashTime => 65f;
         public override float PullBackScale => 1.0f; // No pullback 
         public override float MaxPullBackRate => 1.0f;
@@ -29,10 +30,11 @@ namespace DasherClass.Projectiles
         public int voidClawIndex = -1;
         public int voidCrystalIndex = -1;
         public bool onReelback = false;
-        public int holdFrameCount = 7;
-        public int holdFrameCounter = 7;
-        public int slashUpSlashIndex = -1;
-        public int clawUpSlashIndex = -1;
+        public int holdFrameCount = 3;
+        public int holdFrameCounter = 3;
+        public int clawSlashIndex = -1;
+        public int totalAllowedClawSlashes = 3;
+        public List<int> totalAllowedClawSlashesList = new List<int>();
         public int[] KEYFRAMES = [4, 9, 14, 18];
 
         public override void SetStaticDefaults()
@@ -61,12 +63,23 @@ namespace DasherClass.Projectiles
             if (isMidlunge)
             {
                 Projectile.width = 59;
+                // Spawn 3 shadowflame dusts at random positions around the center (not exactly center)
+                for (int i = 0; i < 3; i++)
+                {
+                    float angle = Main.rand.NextFloat(MathHelper.TwoPi);
+                    float radius = Main.rand.NextFloat(Projectile.width * 0.3f, Projectile.width * 0.6f);
+                    Vector2 offset = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle)) * radius;
+                    Vector2 dustPos = Projectile.Center + offset.RotatedBy(Projectile.rotation);
+                    Dust dust = Dust.NewDustDirect(dustPos, 4, 4, DustID.Shadowflame, Projectile.velocity.X * 0.5f, Projectile.velocity.Y * 0.5f, 120, default, 1.1f);
+                    dust.noGravity = true;
+                    dust.velocity *= 0.7f;
+                }
                 if(Projectile.frame >= Main.projFrames[Projectile.type] - 1)
                 {
                     Projectile.Kill();
                 }
             }
-            FrameDelay = frameDelayHandler();
+            FrameDelay = FrameDelayHandler();
             if (voidCrystalIndex == -1)
             {
                 voidCrystalIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), Owner.Center + new Vector2(-10, -48), Projectile.velocity * 0, ModContent.ProjectileType<VoidCrystal>(), 0, 0, Projectile.owner);
@@ -80,7 +93,7 @@ namespace DasherClass.Projectiles
             Projectile crystalProjectile = Main.projectile[voidCrystalIndex];
             if (((VoidCrystal)crystalProjectile.ModProjectile).isCracked)
             {
-                SpawnUpSlash(target);
+                SpawnSlash(target);
             }
         }
 
@@ -124,6 +137,11 @@ namespace DasherClass.Projectiles
                     return;
                 } else
                 {
+                    // Play Demon Scythe sound when charging, not lunging
+                    if (!isMidlunge)
+                    {
+                        Terraria.Audio.SoundEngine.PlaySound(SoundID.Item8, Projectile.Center); // Demon Scythe cast
+                    }
                     Projectile.frameCounter++;
                     Projectile.frame++;
                     holdFrameCounter = holdFrameCount;
@@ -135,38 +153,44 @@ namespace DasherClass.Projectiles
             }
         }
 
-        public void SpawnUpSlash(NPC target)
+        public void SpawnSlash(NPC target)
         {
-            if(clawUpSlashIndex == -1 && slashUpSlashIndex == -1)
+            if (totalAllowedClawSlashesList.Count < totalAllowedClawSlashes)
             {
-                Vector2 clawSpawnPos = target.Center + new Vector2(0, Projectile.height * 0.5f + 3f);
-                Vector2 slashSpawnPos = target.Center + new Vector2(0, Projectile.height * 0.5f + 8f);
-                Vector2 slowUpVel = new Vector2(0f, -2f);
-                Vector2 fastUpVel = new Vector2(0f, -4f);
-                clawUpSlashIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), clawSpawnPos, fastUpVel, ModContent.ProjectileType<VoidClawUpSlash>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
-                slashUpSlashIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), slashSpawnPos, slowUpVel, ModContent.ProjectileType<VoidUpSlash>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
+                Vector2 clawSpawnPos = target.Center - new Vector2(0, target.height / 2 + Projectile.height / 2);
+                clawSlashIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), clawSpawnPos, Vector2.Zero, ModContent.ProjectileType<VoidClawSlash>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
+                totalAllowedClawSlashesList.Add(clawSlashIndex);
             }
         }
 
-        public int frameDelayHandler()
+        public int FrameDelayHandler()
         {
             int FrameDelay;
             if (Projectile.frame >= 0 && Projectile.frame <= 19)
             {
                 FrameDelay = 2;
-            } else if (Projectile.frame == 20)
+            }
+            else if (Projectile.frame == 20)
             {
                 FrameDelay = 3;
-            } else if (Projectile.frame >= 21 && Projectile.frame <= 27)
+            }
+            else if (Projectile.frame >= 21 && Projectile.frame <= 27)
             {
                 FrameDelay = 2;
-            } else if (Projectile.frame >= 28 && Projectile.frame <= 34)
+            }
+            else if (Projectile.frame >= 28 && Projectile.frame <= 34)
             {
+                if (Projectile.frame == 28)
+                {
+                    Terraria.Audio.SoundEngine.PlaySound(SoundID.Item20, Projectile.Center); // unholy trident cast
+                }
                 FrameDelay = 6;
-            } else if (Projectile.frame >= 38 && Projectile.frame <= 50)
+            }
+            else if (Projectile.frame >= 38 && Projectile.frame <= 50)
             {
                 FrameDelay = 1;
-            } else
+            }
+            else
             {
                 FrameDelay = 3;
             }
@@ -181,15 +205,18 @@ namespace DasherClass.Projectiles
             Texture2D punchTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
             Rectangle frame = punchTexture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
             Vector2 origin = frame.Size() * 0.5f;
-            SpriteEffects directionEffect;
-            if (Owner.direction == 1)
-            {
-                directionEffect = SpriteEffects.FlipVertically;
-            } else
-            {
-                directionEffect = SpriteEffects.None;
-            }
-            Main.EntitySpriteDraw(punchTexture, Projectile.Center - Main.screenPosition, frame, lightColor, Projectile.rotation, origin, Projectile.scale, directionEffect, 0);
+            SpriteEffects directionEffect = Owner.direction == 1 ? SpriteEffects.FlipVertically : SpriteEffects.None;
+
+            // Draw base sprite
+            Vector2 drawPos = Projectile.Center - Main.screenPosition;
+            Main.EntitySpriteDraw(punchTexture, drawPos, frame, lightColor, Projectile.rotation, origin, Projectile.scale, directionEffect, 0);
+
+            // Draw violet glowmask perfectly aligned
+            Texture2D glowTexture = punchTexture; // Use the same texture for now, ideally use a separate glowmask asset
+            Color glowColor = new Color(180, 80, 255, 80) * 0.7f; // Moderate violet, semi-transparent
+            float glowScale = Projectile.scale * 1.05f;
+            Main.EntitySpriteDraw(glowTexture, drawPos, frame, glowColor, Projectile.rotation, origin, glowScale, directionEffect, 0);
+
             return false;
         }
         #endregion
