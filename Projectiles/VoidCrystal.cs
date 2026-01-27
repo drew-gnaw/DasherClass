@@ -11,7 +11,7 @@ namespace DasherClass.Projectiles
     {
         public new string LocalizationCategory => "Projectiles";
         public bool isCracked = false;
-        public float chargeTime = 120f;
+        public float chargeTime = 70f;
         public float currentChargeTime = 0f;
 
         public override void SetStaticDefaults()
