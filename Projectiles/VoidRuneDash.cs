@@ -15,13 +15,13 @@ namespace DasherClass.Projectiles
     public class VoidRuneDash : ShieldWeaponProjectile
     {
         public override float LungeSpeed => 17f;
-        public override float ChargeTime => 100f;
-        public override float DashTime => 65f;
+        public override float ChargeTime => 42f;
+        public override float DashTime => 42f;
         public override float PullBackScale => 1.0f; // No pullback 
         public override float MaxPullBackRate => 1.0f;
-        public override int OnHitIFrames => 30;
-        public override float HoldMinRadius => 55f;
-        public override float HoldMaxRadius => 75f;
+        public override int OnHitIFrames => 30;    
+        public override float HoldMinRadius => 70f;
+        public override float HoldMaxRadius => 95f;
         public override float LungingMinRadius => 80f;
         public override float LungingMaxRadius => 100f;
         public override int FrameDelay {get; set;} = 2;
@@ -31,15 +31,14 @@ namespace DasherClass.Projectiles
         public int voidCrystalIndex = -1;
         public bool onReelback = false;
         public int holdFrameCount = 3;
-        public int holdFrameCounter = 3;
+        public int holdFrameCounter = 0;
         public int clawSlashIndex = -1;
-        public int totalAllowedClawSlashes = 3;
-        public List<int> totalAllowedClawSlashesList = new List<int>();
+        public bool spawnedPortal = false;
         public int[] KEYFRAMES = [4, 9, 14, 18];
 
         public override void SetStaticDefaults()
         {
-            Main.projFrames[Projectile.type] = 62;
+            Main.projFrames[Projectile.type] = 35;
         }
 
         public override void SetDefaults()
@@ -62,7 +61,7 @@ namespace DasherClass.Projectiles
             base.AI();
             if (isMidlunge)
             {
-                Projectile.width = 59;
+                Projectile.width = 76;
                 // Spawn 3 shadowflame dusts at random positions around the center (not exactly center)
                 for (int i = 0; i < 3; i++)
                 {
@@ -93,7 +92,7 @@ namespace DasherClass.Projectiles
             Projectile crystalProjectile = Main.projectile[voidCrystalIndex];
             if (((VoidCrystal)crystalProjectile.ModProjectile).isCracked)
             {
-                SpawnSlash(target);
+                SpawnPortal(target);
             }
         }
 
@@ -113,84 +112,59 @@ namespace DasherClass.Projectiles
 
         internal override void HandleChargingProjectileVisuals()
         {
-            if (Projectile.frame >= 35 && Projectile.frame <= 37)
+            if (Projectile.frame >= 14 && Projectile.frame <= 16)
             {
                 float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
                 Projectile.rotation = velocityAngle + MathHelper.Pi;
                 // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
                 Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
-                if (Projectile.frame >= 37)
+                int frameDelay = FrameDelayHandler();
+                if (holdFrameCounter >= frameDelay)
                 {
-                    Projectile.frame = 35;
-                }
-                Projectile.frame++;
-            } else if (KEYFRAMES.Contains(Projectile.frame))
-            {
-                float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
-                Projectile.rotation = velocityAngle + MathHelper.Pi;
-                // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
-                Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
-
-                if (holdFrameCounter > 0)
-                {
-                    holdFrameCounter--;
-                    return;
+                    if (Projectile.frame >= 16)
+                    {
+                        Projectile.frame = 14;
+                    }
+                    Projectile.frame++;
+                    holdFrameCounter = 0;
                 } else
                 {
-                    // Play Demon Scythe sound when charging, not lunging
-                    if (!isMidlunge)
-                    {
-                        Terraria.Audio.SoundEngine.PlaySound(SoundID.Item8, Projectile.Center); // Demon Scythe cast
-                    }
-                    Projectile.frameCounter++;
-                    Projectile.frame++;
-                    holdFrameCounter = holdFrameCount;
+                    holdFrameCounter++;
                 }
-
-            } else
+            }else
             {
                 base.HandleChargingProjectileVisuals();
             }
         }
 
-        public void SpawnSlash(NPC target)
+        public void SpawnPortal(NPC target)
         {
-            if (totalAllowedClawSlashesList.Count < totalAllowedClawSlashes)
+            if(!spawnedPortal)
             {
-                Vector2 clawSpawnPos = target.Center - new Vector2(0, target.height / 2 + Projectile.height / 2);
-                clawSlashIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), clawSpawnPos, Vector2.Zero, ModContent.ProjectileType<VoidClawSlash>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
-                totalAllowedClawSlashesList.Add(clawSlashIndex);
+                 Vector2 clawSpawnPos = target.Center - new Vector2(0, target.height / 2 + Projectile.height / 2);
+                clawSlashIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), clawSpawnPos, Vector2.Zero, ModContent.ProjectileType<VoidPortal>(), Projectile.damage, Projectile.knockBack, Projectile.owner);
+                spawnedPortal = true;
             }
         }
 
         public int FrameDelayHandler()
         {
             int FrameDelay;
-            if (Projectile.frame >= 0 && Projectile.frame <= 19)
-            {
-                FrameDelay = 2;
-            }
-            else if (Projectile.frame == 20)
+            if (Projectile.frame >= 0 && Projectile.frame <= 13)
             {
                 FrameDelay = 3;
-            }
-            else if (Projectile.frame >= 21 && Projectile.frame <= 27)
+            } else if (Projectile.frame >= 14 && Projectile.frame <= 16)
             {
-                FrameDelay = 2;
+                FrameDelay = 5;
             }
-            else if (Projectile.frame >= 28 && Projectile.frame <= 34)
+            else if (Projectile.frame >= 17 && Projectile.frame <= 23)
             {
-                if (Projectile.frame == 28)
+                if (Projectile.frame == 17)
                 {
                     Terraria.Audio.SoundEngine.PlaySound(SoundID.Item20, Projectile.Center); // unholy trident cast
                 }
-                FrameDelay = 6;
-            }
-            else if (Projectile.frame >= 38 && Projectile.frame <= 50)
-            {
                 FrameDelay = 1;
-            }
-            else
+            } else
             {
                 FrameDelay = 3;
             }
