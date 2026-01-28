@@ -20,13 +20,15 @@ namespace DasherClass.Projectiles
         public override float PullBackScale => 1.0f; // No pullback 
         public override float MaxPullBackRate => 1.0f;
         public override int OnHitIFrames => 30;    
-        public override float HoldMinRadius => 70f;
-        public override float HoldMaxRadius => 95f;
+        public override float HoldMinRadius => 80f;
+        public override float HoldMaxRadius => 100f;
         public override float LungingMinRadius => 80f;
         public override float LungingMaxRadius => 100f;
         public override int FrameDelay {get; set;} = 2;
         public override bool CycleChargingSprite => false;
         public override bool CycleLungingSprite => false;
+        public override bool IsDiagonalSprite => false;
+        public bool crystalCharged = false;
         public int voidClawIndex = -1;
         public int voidCrystalIndex = -1;
         public bool onReelback = false;
@@ -61,6 +63,15 @@ namespace DasherClass.Projectiles
             base.AI();
             if (isMidlunge)
             {
+                if(!crystalCharged)
+                {
+                    Projectile crystalProjectile = Main.projectile[voidCrystalIndex];
+                    if(((VoidCrystal)crystalProjectile.ModProjectile).isCracked)
+                    {
+                        crystalCharged = true;
+                    }
+                    crystalProjectile.Kill();
+                }
                 Projectile.width = 76;
                 // Spawn 3 shadowflame dusts at random positions around the center (not exactly center)
                 for (int i = 0; i < 3; i++)
@@ -89,8 +100,23 @@ namespace DasherClass.Projectiles
         {
             base.OnHitNPC(target, hit, damageDone);
             target.AddBuff(BuffID.ShadowFlame, 300);
-            Projectile crystalProjectile = Main.projectile[voidCrystalIndex];
-            if (((VoidCrystal)crystalProjectile.ModProjectile).isCracked)
+            
+            // Spawn void explosion at target with 1.5x damage
+            if (Main.myPlayer == Projectile.owner)
+            {
+                int explosionDamage = (int)(Projectile.damage * 1.5f);
+                Projectile.NewProjectile(
+                    Projectile.GetSource_FromThis(),
+                    target.Center,
+                    Vector2.Zero,
+                    ModContent.ProjectileType<VoidExplosion>(),
+                    explosionDamage,
+                    Projectile.knockBack,
+                    Projectile.owner
+                );
+            }
+            
+            if (crystalCharged)
             {
                 SpawnPortal(target);
             }

@@ -24,6 +24,7 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
     public abstract int FrameDelay { get; set;}
     public abstract bool CycleLungingSprite { get; }
     public abstract bool CycleChargingSprite { get; }
+    public abstract bool IsDiagonalSprite { get; }
 
     public new string LocalizationCategory => "Projectiles";
     public Player Owner => Main.player[Projectile.owner];
@@ -157,10 +158,22 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             // Animate frames at a steady rate and point the projectile toward the mouse while charging.
             float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
             Projectile.rotation = velocityAngle + MathHelper.Pi;
-            // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
+            
+            // Apply 45-degree rotation if diagonal sprite
+            if (IsDiagonalSprite)
+            {
+                if (Owner.direction == 1)
+                {
+                    Projectile.rotation += MathHelper.PiOver4;
+                }
+                else
+                {
+                    Projectile.rotation -= MathHelper.PiOver4;
+                }
+            }
+            
             Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
 
-            // Simple frame timer: advance `Projectile.frame` every `frameDelay` ticks.
             Projectile.frameCounter++;
             if (Projectile.frameCounter >= FrameDelay)
             {
@@ -186,7 +199,6 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             if (aimDirection == Vector2.Zero)
                 aimDirection = Vector2.UnitX * Owner.direction;
 
-            
             float t = Math.Abs(aimDirection.Y);
             float radius = MathHelper.Lerp(HoldMinRadius, HoldMaxRadius, t) * pullBackScale;
             Projectile.Center += aimDirection * radius;
@@ -199,6 +211,20 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             // Animate frames and orient the projectile during the dash.
             float velocityAngle = releaseAimDirection.ToRotation();
             Projectile.rotation = velocityAngle + MathHelper.Pi;
+            
+            // Apply 45-degree rotation if diagonal sprite
+            if (IsDiagonalSprite)
+            {
+                if (Owner.direction == 1)
+                {
+                    Projectile.rotation += MathHelper.PiOver4;
+                }
+                else
+                {
+                    Projectile.rotation -= MathHelper.PiOver4;
+                }
+            }
+            
             // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
             Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
 

@@ -10,14 +10,10 @@ namespace DasherClass.Projectiles
 	public class VoidSpirit : ModProjectile, ILocalizedModType
 	{
 		public new string LocalizationCategory => "Projectiles";
-
-		private const float HomingRange = 900f;
-		private const float HomingLerp = 0.15f;
-		private const int ExplosionRadius = 120;
-		private const int FrameDelay = 3;
-		private const float VelocityDecay = 0.92f;
+		private const int FrameDelay = 6;
+		private const float VelocityDecay = 0.95f;
 		private const float RotationSpeed = 0.08f;
-        private const float MaxSpeed = 7f;
+        private const float MaxSpeed = 6f;
         private const float TurnStrength = 0.12f; // how quickly the velocity rotates toward the target
         private const int SearchRadius = 900;
         // Number of ticks to wait before homing activates
@@ -43,7 +39,7 @@ namespace DasherClass.Projectiles
 
 		public override void SetDefaults()
 		{
-			Projectile.scale = 0.6f;
+			Projectile.scale = 0.5f;
             Projectile.width = (int)(36 * Projectile.scale);
 			Projectile.height = (int)(52 * Projectile.scale);
 			Projectile.friendly = false;
@@ -225,44 +221,23 @@ namespace DasherClass.Projectiles
 		public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
 		{
 			base.OnHitNPC(target, hit, damageDone);
-			Explode();
+            
+            // Spawn void explosion at target with 1.5x damage
+            if (Main.myPlayer == Projectile.owner)
+            {
+                int explosionDamage = Projectile.damage;
+                Projectile.NewProjectile(
+                    Projectile.GetSource_FromThis(),
+                    target.Center,
+                    Vector2.Zero,
+                    ModContent.ProjectileType<VoidExplosion>(),
+                    explosionDamage,
+                    Projectile.knockBack,
+                    Projectile.owner
+                );
+            }
+            
             Projectile.Kill();
-		}
-
-		public override void OnKill(int timeLeft)
-		{
-			Explode();
-		}
-
-		private void Explode()
-		{
-			if (!Projectile.active)
-			{
-				return;
-			}
-
-			Terraria.Audio.SoundEngine.PlaySound(SoundID.Item14, Projectile.Center);
-
-			Vector2 center = Projectile.Center;
-			int oldWidth = Projectile.width;
-			int oldHeight = Projectile.height;
-
-			Projectile.position = center;
-			Projectile.width = Projectile.height = ExplosionRadius * 2;
-			Projectile.Center = center;
-
-			for (int i = 0; i < 25; i++)
-			{
-				Vector2 velocity = Main.rand.NextVector2Unit() * Main.rand.NextFloat(4f, 10f);
-				Dust d = Dust.NewDustDirect(center - new Vector2(ExplosionRadius), ExplosionRadius * 2, ExplosionRadius * 2, DustID.Shadowflame, velocity.X, velocity.Y, 150, default, 1.4f);
-				d.noGravity = true;
-			}
-
-			Projectile.Damage();
-
-			Projectile.width = oldWidth;
-			Projectile.height = oldHeight;
-			Projectile.active = false;
 		}
 
 		public override bool PreDraw(ref Color lightColor)
