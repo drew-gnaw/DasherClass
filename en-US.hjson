@@ -1,0 +1,10 @@
+Mods: {
+	DasherClass: {
+		Items: {
+			DarkLance: {
+				DisplayName: Dark Lance
+				Tooltip: ""
+			}
+		}
+	}
+}

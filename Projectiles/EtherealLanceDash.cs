@@ -26,6 +26,7 @@ namespace DasherClass.Projectiles
         public override int FrameDelay { get; set; } = 1;
         public override bool CycleChargingSprite => false;
         public override bool CycleLungingSprite => false;
+        public override bool IsDiagonalSprite => false;
 
         // consts specific to Ethereal Lance: charge stages
         public const int MaxChargeStages = 10;

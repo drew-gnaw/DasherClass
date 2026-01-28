@@ -13,7 +13,7 @@ namespace DasherClass.Projectiles
         public Vector2 targetPosition;
         public int FrameDelay = 4;
         public int FrameDelayCounter = 4;
-        public int totalAllowedSpirits = 5;
+        public int totalAllowedSpirits = 3;
         public int spiritsSpawned = 0;
         public int spiritSpawnDelay = 10;
         public int spiritSpawnDelayCounter = 10;
