@@ -8,6 +8,7 @@ namespace DasherClass.Items.Weapons
 {
     public class DarkLance : ModItem
     {
+        public new string LocalizationCategory => "Items.Weapons";
         public override void SetDefaults()
         {
             Item.damage = 48;
