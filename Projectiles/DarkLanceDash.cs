@@ -11,8 +11,8 @@ namespace DasherClass.Projectiles
     public class DarkLanceDash : LanceWeaponProjectile
     {
         public override float LungeSpeed => 15f;
-        public override float ChargeTime => 10f;
-        public override float DashTime => 15f;
+        public override float ChargeTime => 12f;
+        public override float DashTime => 18f;
         public override float PullBackScale => 0.8f;
         public override float MaxPullBackRate => 0.8f;
         public override int OnHitIFrames => 20;
@@ -23,7 +23,7 @@ namespace DasherClass.Projectiles
         public override int FrameDelay { get; set; } = 1;
         public override bool CycleChargingSprite => false;
         public override bool CycleLungingSprite => false;
-        public override bool IsDiagonalSprite => true;
+        public bool offsetted = false;
 
         public override void SetStaticDefaults()
         {
@@ -42,6 +42,7 @@ namespace DasherClass.Projectiles
             Projectile.ownerHitCheck = true;
             Projectile.usesLocalNPCImmunity = true;
             Projectile.localNPCHitCooldown = 15;
+            Projectile.rotation -= MathHelper.PiOver4;
         }
 
         public override void AI()
@@ -53,7 +54,7 @@ namespace DasherClass.Projectiles
             {
                 // Calculate spear tip position (tip is at 0,0 of sprite, which is top-left corner of frame)
                 Vector2 tipOffset = new Vector2(-Projectile.width / 2f, -Projectile.height / 2f).RotatedBy(Projectile.rotation);
-                Vector2 tipPosition = Projectile.Center + tipOffset;
+                Vector2 tipPosition = Projectile.position + tipOffset;
                 
                 Dust d = Dust.NewDustDirect(tipPosition - new Vector2(4, 4), 8, 8, DustID.Shadowflame);
                 d.noGravity = true;
@@ -61,12 +62,17 @@ namespace DasherClass.Projectiles
                 d.scale = 1.4f;
                 d.fadeIn = 1.2f;
             }
+            
+            if(isMidlunge)
+            {
+                offsetted = true;
+            }
 
             // Spawn shadow particles during dash - also at tip
             if (isMidlunge && Main.rand.NextBool(3))
             {
                 Vector2 tipOffset = new Vector2(-Projectile.width / 2f, -Projectile.height / 2f).RotatedBy(Projectile.rotation);
-                Vector2 tipPosition = Projectile.Center + tipOffset;
+                Vector2 tipPosition = Projectile.position + tipOffset;
                 
                 Dust d = Dust.NewDustDirect(tipPosition - new Vector2(4, 4), 8, 8, DustID.Shadowflame);
                 d.noGravity = true;
@@ -95,7 +101,23 @@ namespace DasherClass.Projectiles
             Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
             Rectangle frame = texture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
             Vector2 origin = frame.Size() * 0.5f;
-            SpriteEffects effects = Owner.direction == 1 ? SpriteEffects.FlipVertically : SpriteEffects.None;
+            SpriteEffects effects;
+            if (Owner.direction == 1)
+            {
+                effects = SpriteEffects.FlipVertically;
+                if(!offsetted)
+                {
+                    Projectile.rotation += MathHelper.PiOver4;
+                }
+            }
+            else
+            {
+                effects = SpriteEffects.None;
+                if(!offsetted)
+                {
+                    Projectile.rotation -= MathHelper.PiOver4;
+                }
+            }
 
             Vector2 drawPos = Projectile.Center - Main.screenPosition;
             

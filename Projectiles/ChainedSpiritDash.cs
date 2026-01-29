@@ -21,7 +21,6 @@ namespace DasherClass.Projectiles
         public override int FrameDelay { get; set; } = 3;
         public override bool CycleChargingSprite => true;
         public override bool CycleLungingSprite => true;
-        public override bool IsDiagonalSprite => false;
 
         public override void SetStaticDefaults()
         {

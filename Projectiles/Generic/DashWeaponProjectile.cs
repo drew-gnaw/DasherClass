@@ -24,7 +24,6 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
     public abstract int FrameDelay { get; set;}
     public abstract bool CycleLungingSprite { get; }
     public abstract bool CycleChargingSprite { get; }
-    public abstract bool IsDiagonalSprite { get; }
 
     public new string LocalizationCategory => "Projectiles";
     public Player Owner => Main.player[Projectile.owner];
@@ -159,19 +158,6 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             float velocityAngle = (Main.MouseWorld - Owner.Center).ToRotation();
             Projectile.rotation = velocityAngle + MathHelper.Pi;
             
-            // Apply 45-degree rotation if diagonal sprite
-            if (IsDiagonalSprite)
-            {
-                if (Owner.direction == 1)
-                {
-                    Projectile.rotation += MathHelper.PiOver4;
-                }
-                else
-                {
-                    Projectile.rotation -= MathHelper.PiOver4;
-                }
-            }
-            
             Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
 
             Projectile.frameCounter++;
@@ -208,23 +194,6 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
 
         internal virtual void HandleProjectileVisuals()
         {
-            // Animate frames and orient the projectile during the dash.
-            float velocityAngle = releaseAimDirection.ToRotation();
-            Projectile.rotation = velocityAngle + MathHelper.Pi;
-            
-            // Apply 45-degree rotation if diagonal sprite
-            if (IsDiagonalSprite)
-            {
-                if (Owner.direction == 1)
-                {
-                    Projectile.rotation += MathHelper.PiOver4;
-                }
-                else
-                {
-                    Projectile.rotation -= MathHelper.PiOver4;
-                }
-            }
-            
             // Ensure sprite direction matches owner so PreDraw can flip vertically/horizontally
             Projectile.spriteDirection = Owner.direction == 1 ? 1 : -1;
 

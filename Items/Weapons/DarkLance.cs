@@ -27,5 +27,20 @@ namespace DasherClass.Items.Weapons
             Item.channel = true;
             Item.autoReuse = false;
         }
+
+        public override bool Shoot(Player player, Terraria.DataStructures.EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
+        {
+            // Kill any existing Dark Lance projectiles owned by this player
+            for (int i = 0; i < Main.maxProjectiles; i++)
+            {
+                Projectile proj = Main.projectile[i];
+                if (proj.active && proj.type == type && proj.owner == player.whoAmI)
+                {
+                    proj.Kill();
+                }
+            }
+            
+            return true;
+        }
     }
 }
