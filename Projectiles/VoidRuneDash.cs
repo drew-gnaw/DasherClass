@@ -64,12 +64,19 @@ namespace DasherClass.Projectiles
             {
                 if(!crystalCharged)
                 {
-                    Projectile crystalProjectile = Main.projectile[voidCrystalIndex];
-                    if(((VoidCrystal)crystalProjectile.ModProjectile).isCracked)
+                    // Validate the crystal projectile exists and is the correct type
+                    if (voidCrystalIndex >= 0 && voidCrystalIndex < Main.maxProjectiles)
                     {
-                        crystalCharged = true;
+                        Projectile crystalProjectile = Main.projectile[voidCrystalIndex];
+                        if (crystalProjectile.active && crystalProjectile.type == ModContent.ProjectileType<VoidCrystal>())
+                        {
+                            if(((VoidCrystal)crystalProjectile.ModProjectile).isCracked)
+                            {
+                                crystalCharged = true;
+                            }
+                            crystalProjectile.Kill();
+                        }
                     }
-                    crystalProjectile.Kill();
                 }
                 Projectile.width = 76;
                 // Spawn 3 shadowflame dusts at random positions around the center (not exactly center)
