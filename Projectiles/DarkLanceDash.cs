@@ -33,8 +33,8 @@ namespace DasherClass.Projectiles
         public override void SetDefaults()
         {
             Projectile.scale = 1.2f;
-            Projectile.width = 40;
-            Projectile.height = 40;
+            Projectile.width = (int)(70 * Projectile.scale);
+            Projectile.height = (int)(70 * Projectile.scale);
             Projectile.friendly = true;
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;
@@ -49,42 +49,47 @@ namespace DasherClass.Projectiles
         {
             base.AI();
 
-            // Spawn shadow particles while charging - concentrated at spear tip
-            if (!isMidlunge && Owner.controlUseItem && Main.rand.NextBool(2))
+            // Spawn shadow particles along the entire sprite
+            if (Main.rand.NextBool(2))
             {
-                // Calculate spear tip position (tip is at 0,0 of sprite, which is top-left corner of frame)
-                Vector2 tipOffset = new Vector2(-Projectile.width / 2f, -Projectile.height / 2f).RotatedBy(Projectile.rotation);
-                Vector2 tipPosition = Projectile.position + tipOffset;
-                
-                Dust d = Dust.NewDustDirect(tipPosition - new Vector2(4, 4), 8, 8, DustID.Shadowflame);
-                d.noGravity = true;
-                d.velocity = Main.rand.NextVector2Circular(2f, 2f);
-                d.scale = 1.4f;
-                d.fadeIn = 1.2f;
+                // Sample multiple points along the lance length
+                for (int i = 0; i < 4; i++)
+                {
+                    // Calculate position along the sprite from projectile center outward
+                    float progress = i / 3f;
+                    // Use projectile center as the base position
+                    Vector2 direction = new Vector2((float)Math.Cos(Projectile.rotation), (float)Math.Sin(Projectile.rotation));
+                    Vector2 dustPosition = Projectile.Center - direction * (progress * 50f); // Extend along the sprite
+                    
+                    Dust d = Dust.NewDustDirect(dustPosition - new Vector2(4, 4), 8, 8, DustID.Shadowflame);
+                    d.noGravity = true;
+                    
+                    if (isMidlunge)
+                    {
+                        // During dash, dust trails behind
+                        d.velocity = Projectile.velocity * 0.3f + Main.rand.NextVector2Circular(1f, 1f);
+                        d.scale = 1.6f;
+                    }
+                    else
+                    {
+                        // While charging, dust swirls around
+                        d.velocity = Main.rand.NextVector2Circular(2f, 2f);
+                        d.scale = 1.4f;
+                        d.fadeIn = 1.2f;
+                    }
+                }
             }
             
             if(isMidlunge)
             {
                 offsetted = true;
             }
-
-            // Spawn shadow particles during dash - also at tip
-            if (isMidlunge && Main.rand.NextBool(3))
-            {
-                Vector2 tipOffset = new Vector2(-Projectile.width / 2f, -Projectile.height / 2f).RotatedBy(Projectile.rotation);
-                Vector2 tipPosition = Projectile.position + tipOffset;
-                
-                Dust d = Dust.NewDustDirect(tipPosition - new Vector2(4, 4), 8, 8, DustID.Shadowflame);
-                d.noGravity = true;
-                d.velocity = Projectile.velocity * 0.3f;
-                d.scale = 1.4f;
-            }
         }
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             base.OnHitNPC(target, hit, damageDone);
-            target.AddBuff(BuffID.ShadowFlame, 240);
+            target.AddBuff(BuffID.ShadowFlame, 100);
             
             // Add some impact particles
             for (int i = 0; i < 8; i++)
@@ -93,6 +98,20 @@ namespace DasherClass.Projectiles
                 d.noGravity = true;
                 d.velocity = Main.rand.NextVector2Circular(3f, 3f);
                 d.scale = 1.3f;
+            }
+
+            if (Main.myPlayer == Projectile.owner)
+            {
+                int explosionDamage = (int)(Projectile.damage * 0.5);
+                Projectile.NewProjectile(
+                    Projectile.GetSource_FromThis(),
+                    target.Center,
+                    Vector2.Zero,
+                    ModContent.ProjectileType<VoidExplosion>(),
+                    explosionDamage,
+                    Projectile.knockBack,
+                    Projectile.owner
+                );
             }
         }
 
