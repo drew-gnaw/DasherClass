@@ -38,6 +38,46 @@ namespace DasherClass.Projectiles
             Projectile.frameCounter = 0;
         }
 
+        public override void OnBlockProjectile(Projectile proj)
+        {
+            base.OnBlockProjectile(proj);
+
+            // Only spawn the laser on the server or singleplayer
+            if (Main.myPlayer == Projectile.owner)
+            {
+                // Find the target: the owner of the reflected projectile, if valid
+                int targetPlayer = proj.owner;
+                if (targetPlayer >= 0 && targetPlayer < Main.maxPlayers && Main.player[targetPlayer].active)
+                {
+                    Player owner = Main.player[Projectile.owner];
+                    Vector2 playerCenter = owner.Center;
+                    // Pick a random point around the player (circle)
+                    float angle = Main.rand.NextFloat(MathHelper.TwoPi);
+                    float radius = Main.rand.NextFloat(40f, 80f);
+                    Vector2 spawnPos = playerCenter + radius * angle.ToRotationVector2();
+                    Vector2 targetPos = Main.player[targetPlayer].Center;
+                    Vector2 direction = (targetPos - spawnPos).SafeNormalize(Vector2.UnitX);
+                    float beamLength = (targetPos - spawnPos).Length();
+                    // Spawn the laserbeam
+                    int beam = Projectile.NewProjectile(
+                        Projectile.GetSource_FromThis(),
+                        spawnPos,
+                        direction,
+                        ModContent.ProjectileType<BasicDefensiveMagicBeam>(),
+                        Projectile.damage,
+                        Projectile.knockBack,
+                        Projectile.owner,
+                        0f, // ai[0] = time
+                        beamLength // ai[1] = length
+                    );
+                    if (beam != Main.maxProjectiles)
+                    {
+                        Main.projectile[beam].rotation = direction.ToRotation();
+                    }
+                }
+            }
+        }
+
         #region Drawing
 
         // Manual drawing is used to correct the origin of the projectile when drawn.
