@@ -1,3 +1,4 @@
+using System;
 using Humanizer;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -66,7 +67,7 @@ namespace DasherClass.Projectiles
             {
                 if(flippedOrNotVertical)
                 {
-                    Projectile.rotation += MathHelper.ToRadians(100);
+                    Projectile.rotation -= MathHelper.ToRadians(80);
                 } else
                 {
                     Projectile.rotation += MathHelper.ToRadians(10);
@@ -91,7 +92,6 @@ namespace DasherClass.Projectiles
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            SoundEngine.PlaySound(SoundID.Item62, Projectile.Center);
             // Create additional visual effects on hit
             for (int i = 0; i < 10; i++)
             {

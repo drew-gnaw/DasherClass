@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -150,7 +151,8 @@ namespace DasherClass.Projectiles
         public void SpawnSpears()
         {
             if(lungeTimer > plungeTime)
-            {
+            {   
+                SoundEngine.PlaySound(SoundID.Item62, Projectile.Center);
                 for(int i = 0; i < 5; i++)
                 {
                     Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, DustID.DungeonWater);
