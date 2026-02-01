@@ -2,7 +2,12 @@ Mods: {
 	DasherClass: {
 		Items: {
 			DarkLance: {
+				Tooltip: ""
 				DisplayName: Dark Lance
+			}
+
+			JadeTippedSpear: {
+				DisplayName: Jade Tipped Spear
 				Tooltip: ""
 			}
 		}
