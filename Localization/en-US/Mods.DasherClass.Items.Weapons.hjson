@@ -32,3 +32,8 @@ LanceOfThunder: {
 	DisplayName: Lance Of Thunder
 	Tooltip: ""
 }
+
+ShadeBasher: {
+	Tooltip: ""
+	DisplayName: Shade Basher
+}
