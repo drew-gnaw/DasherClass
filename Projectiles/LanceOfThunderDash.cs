@@ -22,6 +22,12 @@ namespace DasherClass.Projectiles
         public override float HoldMaxRadius => 80f;
         public override float ChargingFrameDelay => 4f;
         public override float LungingFrameDelay => 2f;
+        public override bool CycleChargingSprite => true;
+        public override float LungingMinRadius => 67f;
+        public override float LungingMaxRadius => 80f;
+        public override int FrameDelay { get; set; } = 2;
+        public override bool CycleLungingSprite => true;
+        
 
         #region Lightning Effect Parameters
 

@@ -16,7 +16,6 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
     public abstract float PullBackScale { get; }
     public abstract float MaxPullBackRate { get; }
     public abstract int OnHitIFrames { get; }
-
     public abstract float HoldMinRadius { get; }
     public abstract float HoldMaxRadius { get; }
     public abstract float ChargingFrameDelay { get; }
