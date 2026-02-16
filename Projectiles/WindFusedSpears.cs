@@ -57,20 +57,20 @@ namespace DasherClass.Projectiles
             {
                 if(flippedOrNotVertical)
                 {
-                    Projectile.rotation += MathHelper.ToRadians(80);
+                    Projectile.rotation += MathHelper.ToRadians(65);
                 } else
                 {
-                    Projectile.rotation -= MathHelper.ToRadians(10);
+                    Projectile.rotation -= MathHelper.ToRadians(25);
                 }
             }
             else
             {
                 if(flippedOrNotVertical)
                 {
-                    Projectile.rotation -= MathHelper.ToRadians(80);
+                    Projectile.rotation -= MathHelper.ToRadians(65);
                 } else
                 {
-                    Projectile.rotation += MathHelper.ToRadians(10);
+                    Projectile.rotation += MathHelper.ToRadians(25);
                 }
             }
         }
@@ -135,7 +135,7 @@ namespace DasherClass.Projectiles
 
             // Draw additive glow layer
             Color glowColor = new Color(150, 240, 230, 230) * 0.3f;
-            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, Projectile.rotation, origin, Projectile.scale * 1.15f, effects, 0);
+            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, Projectile.rotation, origin, Projectile.scale * 1.0f, effects, 0);
             return false;
         }
     }

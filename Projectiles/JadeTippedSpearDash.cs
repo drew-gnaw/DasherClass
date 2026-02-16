@@ -225,7 +225,7 @@ namespace DasherClass.Projectiles
             Main.EntitySpriteDraw(texture, drawPos, frame, lightColor, Projectile.rotation, origin, Projectile.scale, effects, 0);
 
             Color glowColor = new Color(40, 130, 85, 0) * 0.5f;
-            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, Projectile.rotation, origin, Projectile.scale * 0.9f, effects, 0);
+            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, Projectile.rotation, origin, Projectile.scale * 1.0f, effects, 0);
             return false;
         }
     }
