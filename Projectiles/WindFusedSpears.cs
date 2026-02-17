@@ -26,7 +26,7 @@ namespace DasherClass.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.scale = 0.7f;
+            Projectile.scale = 1.0f;
             Projectile.width = (int)(80 * Projectile.scale);
             Projectile.height = (int)(80 * Projectile.scale);
             Projectile.friendly = true;

@@ -21,6 +21,8 @@ namespace DasherClass.Projectiles
         public override float LungingMinRadius => 25f;
         public override float LungingMaxRadius => 35f;
         public override int FrameDelay { get; set; } = 1;
+        public override float ChargingFrameDelay => 1;
+        public override float LungingFrameDelay => 1;
         public override bool CycleChargingSprite => false;
         public override bool CycleLungingSprite => false;
         public int lungeTimer = 0;
@@ -61,24 +63,19 @@ namespace DasherClass.Projectiles
                 Projectile.Center = Owner.Center;
                 Projectile.rotation = MathHelper.Pi + MathHelper.PiOver2 - MathHelper.PiOver4; // Down direction, accounting for sprite's -45° base
                 offsetted = true;
-                if(Owner.velocity.Y <= 0)
+                if(Owner.velocity.Y <= 2f)
                 {
                     SpawnSpears();
                 }
                 HandleDust();
-            } else if(isRightClickLunge && Main.mouseRightRelease)
-            {
-                Projectile.Kill();
             }
             else
             {
                 base.AI();
-                
                 if(isMidlunge)
                 {
                     offsetted = true;
                 }
-                
                 HandleDust();
             }
         }
@@ -98,6 +95,16 @@ namespace DasherClass.Projectiles
             dasherPlayer.lungeSpeed = LungeSpeed * 1.5f; 
             HasPerformedLunge = true;
             isRightClickLunge = true;
+        }
+
+        public override bool OnTileCollide(Vector2 oldVelocity)
+        {
+            if(isRightClickLunge)
+            {
+                SpawnSpears();
+            }
+            base.OnTileCollide(oldVelocity);
+            return true;
         }
 
         public void HandleDust()
