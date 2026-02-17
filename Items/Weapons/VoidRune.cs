@@ -7,14 +7,14 @@ using Terraria.ModLoader;
 
 namespace DasherClass.Items.Weapons
 {
-    public class ChainedSpirit : ModItem, ILocalizedModType
+    public class VoidRune : ModItem, ILocalizedModType
     {
         public new string LocalizationCategory => "Items.Weapons";
 
         public override void SetDefaults()
         {
             Item.width = Item.height = 40;
-            Item.damage = 65;
+            Item.damage = 100;
             Item.DamageType = DasherDamageClass.Instance;
             Item.noMelee = true;
             Item.noUseGraphic = true;
@@ -26,7 +26,7 @@ namespace DasherClass.Items.Weapons
             Item.UseSound = SoundID.Item1;
             Item.autoReuse = true;
             Item.value = Item.buyPrice(gold: 10);
-            Item.shoot = ModContent.ProjectileType<ChainedSpiritDash>();
+            Item.shoot = ModContent.ProjectileType<VoidRuneDash>();
             Item.shootSpeed = 1f;
             Item.rare = ItemRarityID.Red;
         }
@@ -45,7 +45,7 @@ namespace DasherClass.Items.Weapons
 		public override void AddRecipes()
 		{
 			Recipe recipe = CreateRecipe();
-			recipe.AddIngredient(ItemID.Wood, 7);
+			recipe.AddIngredient(ItemID.Silk, 7);
 			recipe.AddIngredient(ItemID.Rope, 3);
 			recipe.AddTile(TileID.WorkBenches);
 			recipe.Register();
