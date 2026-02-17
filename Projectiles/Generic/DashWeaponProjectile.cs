@@ -18,13 +18,13 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
     public abstract int OnHitIFrames { get; }
     public abstract float HoldMinRadius { get; }
     public abstract float HoldMaxRadius { get; }
-    public abstract float ChargingFrameDelay { get; }
-    public abstract float LungingFrameDelay { get; }
     public abstract float LungingMinRadius { get; }
     public abstract float LungingMaxRadius { get; }
     public abstract int FrameDelay { get; set;}
     public abstract bool CycleLungingSprite { get; }
     public abstract bool CycleChargingSprite { get; }
+    public abstract float ChargingFrameDelay { get; }
+    public abstract float LungingFrameDelay { get; }
 
     public new string LocalizationCategory => "Projectiles";
     public Player Owner => Main.player[Projectile.owner];

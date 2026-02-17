@@ -16,10 +16,6 @@ namespace DasherClass.DasherPlayer
             if (isLunging)
             {
                 Player.maxFallSpeed = lungeSpeed;
-                if (isLance)
-                {
-                    Player.gravity = lanceLungeGravity;
-                }
             } else
             {
                 base.PreUpdate();
