@@ -32,3 +32,8 @@ LanceOfThunder: {
 	DisplayName: Lance Of Thunder
 	Tooltip: ""
 }
+
+VoidRune: {
+	DisplayName: Void Rune
+	Tooltip: Conjures up the power of the night
+}

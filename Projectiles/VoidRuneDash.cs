@@ -15,7 +15,7 @@ namespace DasherClass.Projectiles
     public class VoidRuneDash : ShieldWeaponProjectile
     {
         public override float LungeSpeed => 17f;
-        public override float ChargeTime => 42f;
+        public override float ChargeTime => 36f;
         public override float DashTime => 42f;
         public override float PullBackScale => 1.0f; // No pullback 
         public override float MaxPullBackRate => 1.0f;
@@ -25,8 +25,8 @@ namespace DasherClass.Projectiles
         public override float LungingMinRadius => 80f;
         public override float LungingMaxRadius => 100f;
         public override int FrameDelay {get; set;} = 2;
-        public override float ChargingFrameDelay => 2;
-        public override float LungingFrameDelay => 2;
+        public override float ChargingFrameDelay => 2f;
+        public override float LungingFrameDelay => 2f;
         public override bool CycleChargingSprite => false;
         public override bool CycleLungingSprite => false;
         public bool crystalCharged = false;
