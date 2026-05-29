@@ -1,14 +1,15 @@
 ﻿﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.ID;
 
 namespace DasherClass.Projectiles
 {
     public class FleshRipperDash : LanceWeaponProjectile
     {
-        public override float LungeSpeed => 60f;
-        public override float ChargeTime => 50f;
-        public override float DashTime => 15f;
+        public override float LungeSpeed => 30f;
+        public override float ChargeTime => 200f;
+        public override float DashTime => 10f;
 
         public override void SetStaticDefaults()
         {
@@ -17,7 +18,7 @@ namespace DasherClass.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.scale = 1.2f;
+            Projectile.scale = 0.6f;
             Projectile.width = Projectile.height = (int)(Projectile.scale * 30);
             Projectile.friendly = true;
             Projectile.penetrate = -1;
@@ -70,6 +71,13 @@ namespace DasherClass.Projectiles
 
         #region NPC Hit Collision Logic
 
+        public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone) => GrantHealthRegen();
+
         #endregion
+
+        private void GrantHealthRegen()
+        {
+            Owner.AddBuff(BuffID.Regeneration, 300);
+        }
     }
 }
