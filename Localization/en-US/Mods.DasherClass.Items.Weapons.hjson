@@ -37,3 +37,8 @@ ShadeBasher: {
 	Tooltip: ""
 	DisplayName: Shade Basher
 }
+
+FleshRipper: {
+	Tooltip: ""
+	DisplayName: Flesh Ripper
+}
