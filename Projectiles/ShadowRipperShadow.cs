@@ -14,7 +14,7 @@ namespace DasherClass.Projectiles
         private System.Collections.Generic.List<Vector2> slashPath = new System.Collections.Generic.List<Vector2>();
         private float dashProgress = 0f;
         private const float DashDuration = 25f;
-        private const float InitialDelay = 30f;
+        private const float InitialDelay = 20f;
 
         public override void SetStaticDefaults()
         {
