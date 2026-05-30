@@ -39,6 +39,6 @@ ShadeBasher: {
 }
 
 FleshRipper: {
-	Tooltip: ""
+	Tooltip: Dashing through an enemy rips flesh chunks out of them
 	DisplayName: Flesh Ripper
 }

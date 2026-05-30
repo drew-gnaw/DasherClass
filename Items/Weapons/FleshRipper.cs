@@ -45,8 +45,9 @@ namespace DasherClass.Items.Weapons
 		public override void AddRecipes()
 		{
 			Recipe recipe = CreateRecipe();
-			recipe.AddIngredient(ItemID.DirtBlock, 1);
-			recipe.AddTile(TileID.WorkBenches);
+			recipe.AddIngredient(ItemID.CrimtaneBar, 14);
+            recipe.AddIngredient(ItemID.TissueSample, 8);
+			recipe.AddTile(TileID.Anvils);
 			recipe.Register();
 		}
     }
