@@ -28,7 +28,7 @@ namespace DasherClass.Items.Weapons
             Item.value = Item.buyPrice(gold: 10);
             Item.shoot = ModContent.ProjectileType<ShadowRipperDash>();
             Item.shootSpeed = 1f;
-            Item.rare = ItemRarityID.Red;
+            Item.rare = ItemRarityID.Blue;
         }
 
         // Terraria seems to really dislike high crit values in SetDefaults.
