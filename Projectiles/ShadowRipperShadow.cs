@@ -10,10 +10,11 @@ namespace DasherClass.Projectiles
     public class ShadowRipperShadow : ModProjectile
     {
         private Vector2 previousPosition;
+        private Vector2 dashStartPosition;
+        private System.Collections.Generic.List<Vector2> slashPath = new System.Collections.Generic.List<Vector2>();
         private float dashProgress = 0f;
         private const float DashDuration = 25f;
         private const float InitialDelay = 30f;
-        private int ownerDirection = 1;
 
         public override void SetStaticDefaults()
         {
@@ -35,13 +36,16 @@ namespace DasherClass.Projectiles
         public override void AI()
         {
             Player player = Main.player[Projectile.owner];
-            ownerDirection = player.direction;
 
             if (dashProgress < InitialDelay)
             {
                 dashProgress++;
                 Projectile.velocity = Vector2.Zero;
                 previousPosition = Projectile.Center;
+
+                Vector2 directionToPlayer = (player.Center - Projectile.Center).SafeNormalize(Vector2.Zero);
+                Projectile.rotation = directionToPlayer.ToRotation();
+
                 return;
             }
 
@@ -49,6 +53,13 @@ namespace DasherClass.Projectiles
 
             if (adjustedProgress < DashDuration)
             {
+                if (adjustedProgress == 0)
+                {
+                    dashStartPosition = Projectile.Center;
+                    slashPath.Clear();
+                    slashPath.Add(Projectile.Center);
+                }
+
                 previousPosition = Projectile.Center;
 
                 Vector2 directionToPlayer = (player.Center - Projectile.Center).SafeNormalize(Vector2.Zero);
@@ -58,7 +69,13 @@ namespace DasherClass.Projectiles
                 float rotationToPlayer = directionToPlayer.ToRotation();
                 Projectile.rotation = rotationToPlayer;
 
+                if (Vector2.Distance(Projectile.Center, player.Center) < 30f)
+                {
+                    Projectile.Kill();
+                }
+
                 dashProgress++;
+                slashPath.Add(Projectile.Center);
             }
             else
             {
@@ -81,7 +98,7 @@ namespace DasherClass.Projectiles
 
             Color shadowColor = Color.White * (1f - adjustedProgress / DashDuration);
 
-            SpriteEffects effects = ownerDirection == 1 ? SpriteEffects.FlipVertically : SpriteEffects.None;
+            SpriteEffects effects = System.Math.Cos(Projectile.rotation) < 0 ? SpriteEffects.FlipVertically : SpriteEffects.None;
 
             Main.EntitySpriteDraw(
                 shadowTexture,
@@ -103,22 +120,27 @@ namespace DasherClass.Projectiles
             float adjustedProgress = dashProgress - InitialDelay;
             float slashOpacity = 1f - (adjustedProgress / DashDuration);
 
-            Vector2 start = previousPosition - Main.screenPosition;
-            Vector2 end = Projectile.Center - Main.screenPosition;
-
-            Vector2 direction = end - start;
-            float length = direction.Length();
-            if (length < 1f) return;
-
-            float rotation = direction.ToRotation();
+            if (slashPath.Count < 2) return;
 
             Texture2D pixel = TextureAssets.MagicPixel.Value;
 
-            Color slashColor = new Color(200, 100, 255) * slashOpacity * 0.8f;
-            Color slashGlow = new Color(230, 150, 255) * slashOpacity * 0.5f;
+            for (int i = 0; i < slashPath.Count - 1; i++)
+            {
+                Vector2 start = slashPath[i] - Main.screenPosition;
+                Vector2 end = slashPath[i + 1] - Main.screenPosition;
 
-            DrawSlashSegment(pixel, start, length, rotation, 12f, slashGlow);
-            DrawSlashSegment(pixel, start, length, rotation, 6f, slashColor);
+                Vector2 direction = end - start;
+                float length = direction.Length();
+                if (length < 1f) continue;
+
+                float rotation = direction.ToRotation();
+
+                Color slashColor = new Color(200, 100, 255) * slashOpacity;
+                Color slashGlow = new Color(255, 180, 255) * slashOpacity;
+
+                DrawSlashSegment(pixel, start, length, rotation, 12f, slashGlow);
+                DrawSlashSegment(pixel, start, length, rotation, 6f, slashColor);
+            }
         }
 
         private void DrawSlashSegment(Texture2D texture, Vector2 start, float length, float rotation, float width, Color color)
