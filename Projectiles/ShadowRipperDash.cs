@@ -1,6 +1,7 @@
 ﻿﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -9,8 +10,9 @@ namespace DasherClass.Projectiles
     public class ShadowRipperDash : LanceWeaponProjectile
     {
         public override float LungeSpeed => 30f;
-        public override float ChargeTime => 120f;
+        public override float ChargeTime => 60f;
         public override float DashTime => 10f;
+        private bool shadowSpawned = false;
 
         public override void SetStaticDefaults()
         {
@@ -29,6 +31,26 @@ namespace DasherClass.Projectiles
             Projectile.usesLocalNPCImmunity = true;
             Projectile.localNPCHitCooldown = 12;
             Projectile.frameCounter = 0;
+        }
+
+        internal override void PerformLunge()
+        {
+            base.PerformLunge();
+
+            if (Main.myPlayer == Projectile.owner && !shadowSpawned)
+            {
+                Vector2 shadowSpawnPos = Owner.Center;
+                Projectile.NewProjectile(
+                    new EntitySource_Parent(Projectile),
+                    shadowSpawnPos,
+                    Vector2.Zero,
+                    ModContent.ProjectileType<ShadowRipperShadow>(),
+                    Projectile.damage,
+                    Projectile.knockBack,
+                    Projectile.owner
+                );
+                shadowSpawned = true;
+            }
         }
 
 
