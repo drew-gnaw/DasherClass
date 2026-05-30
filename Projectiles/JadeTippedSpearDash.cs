@@ -205,34 +205,34 @@ namespace DasherClass.Projectiles
             Rectangle frame = texture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
             Vector2 origin = frame.Size() * 0.5f;
             SpriteEffects effects;
+
+            float drawRotation = Projectile.rotation;
+            
             if(!Main.mouseRight)
             {
+                
+
                 if (Owner.direction == 1)
                 {
                     effects = SpriteEffects.FlipVertically;
-                    if(!offsetted)
-                    {
-                        Projectile.rotation += MathHelper.PiOver4;
-                    }
+                    drawRotation += MathHelper.PiOver4;
                 }
                 else
                 {
                     effects = SpriteEffects.None;
-                    if(!offsetted)
-                    {
-                        Projectile.rotation -= MathHelper.PiOver4;
-                    }
+                    drawRotation -= MathHelper.PiOver4;
                 }
+
             } else {
                 effects = SpriteEffects.None;
             }
             Vector2 drawPos = Projectile.Center - Main.screenPosition;
             
             // Draw base sprite
-            Main.EntitySpriteDraw(texture, drawPos, frame, lightColor, Projectile.rotation, origin, Projectile.scale, effects, 0);
+            Main.EntitySpriteDraw(texture, drawPos, frame, lightColor, drawRotation, origin, Projectile.scale, effects, 0);
 
             Color glowColor = new Color(40, 130, 85, 0) * 0.5f;
-            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, Projectile.rotation, origin, Projectile.scale * 1.0f, effects, 0);
+            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, drawRotation, origin, Projectile.scale * 1.0f, effects, 0);
             return false;
         }
     }

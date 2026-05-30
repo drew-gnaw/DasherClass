@@ -13,18 +13,18 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
     public abstract float LungeSpeed { get; }
     public abstract float ChargeTime { get; }
     public abstract float DashTime { get; }
-    public abstract float PullBackScale { get; }
-    public abstract float MaxPullBackRate { get; }
-    public abstract int OnHitIFrames { get; }
-    public abstract float HoldMinRadius { get; }
-    public abstract float HoldMaxRadius { get; }
-    public abstract float LungingMinRadius { get; }
-    public abstract float LungingMaxRadius { get; }
-    public abstract int FrameDelay { get; set;}
-    public abstract bool CycleLungingSprite { get; }
-    public abstract bool CycleChargingSprite { get; }
-    public abstract float ChargingFrameDelay { get; }
-    public abstract float LungingFrameDelay { get; }
+    public virtual float PullBackScale { get; } = 1f;
+    public virtual float MaxPullBackRate { get; } = 1f;
+    public virtual int OnHitIFrames { get; } = 15;
+    public virtual float HoldMinRadius { get; } = 50f;
+    public virtual float HoldMaxRadius { get; } = 70f;
+    public virtual float LungingMinRadius { get; } = 50f;
+    public virtual float LungingMaxRadius { get; } = 70f;
+    public virtual int FrameDelay { get; set;}
+    public virtual bool CycleLungingSprite { get; }
+    public virtual bool CycleChargingSprite { get; }
+    public virtual float ChargingFrameDelay { get; }
+    public virtual float LungingFrameDelay { get; }
 
     public new string LocalizationCategory => "Projectiles";
     public Player Owner => Main.player[Projectile.owner];
