@@ -13,7 +13,7 @@ public abstract class LanceWeaponProjectile : DashWeaponProjectile
         DasherPlayer dasherPlayer = Owner.GetModPlayer<DasherPlayer>();
         dasherPlayer.lanceLungeGravity = 0f;
         dasherPlayer.isLance = true;
-    }   
+    }
 
     internal override void HandleProjectileVisuals()
     {
@@ -22,5 +22,15 @@ public abstract class LanceWeaponProjectile : DashWeaponProjectile
             Owner.velocity *= EndOfLungeVelocityScale;
         }
         base.HandleProjectileVisuals();
+    }
+
+    protected override float GetDrawRotation()
+    {
+        float rotation = Projectile.rotation;
+        if (Owner.direction == 1)
+            rotation += MathHelper.PiOver4;
+        else
+            rotation -= MathHelper.PiOver4;
+        return rotation;
     }
 }

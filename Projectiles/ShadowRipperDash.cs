@@ -1,5 +1,4 @@
 ﻿﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -52,43 +51,5 @@ namespace DasherClass.Projectiles
                 shadowSpawned = true;
             }
         }
-
-
-        #region Drawing
-
-        public override bool PreDraw(ref Color lightColor)
-        {
-            Texture2D punchTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
-            Rectangle frame = punchTexture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
-            Vector2 origin = frame.Size() * 0.5f;
-
-            SpriteEffects effects;
-            float drawRotation = Projectile.rotation;
-
-            if (Owner.direction == 1)
-            {
-                effects = SpriteEffects.FlipVertically;
-                drawRotation += MathHelper.PiOver4;
-            }
-            else
-            {
-                effects = SpriteEffects.None;
-                drawRotation -= MathHelper.PiOver4;
-            }
-
-            Main.EntitySpriteDraw(
-                punchTexture,
-                Projectile.Center - Main.screenPosition,
-                frame,
-                lightColor,
-                drawRotation, 
-                origin,
-                Projectile.scale,
-                effects,
-                0
-            );
-            return false;
-        }
-        #endregion
     }
 }

@@ -31,7 +31,6 @@ namespace DasherClass.Items.Weapons
             Item.rare = ItemRarityID.Blue;
         }
 
-        // Terraria seems to really dislike high crit values in SetDefaults.
         public override void ModifyWeaponCrit(Player player, ref float crit) => crit += 10;
 
         public override bool CanUseItem(Player player) => player.ownedProjectileCounts[Item.shoot] <= 0;
