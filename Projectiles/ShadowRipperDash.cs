@@ -56,7 +56,6 @@ namespace DasherClass.Projectiles
 
         #region Drawing
 
-        // Manual drawing is used to correct the origin of the projectile when drawn.
         public override bool PreDraw(ref Color lightColor)
         {
             Texture2D punchTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
