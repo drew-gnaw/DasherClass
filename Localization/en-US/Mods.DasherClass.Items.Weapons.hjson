@@ -30,7 +30,7 @@ VoidRune: {
 
 LanceOfThunder: {
 	DisplayName: Lance Of Thunder
-	Tooltip: "If I'm lying may Zeus himself strike me do-"
+	Tooltip: If I'm lying may Zeus himself strike me do-
 }
 
 ShadeBasher: {
@@ -45,5 +45,5 @@ FleshRipper: {
 
 ShadowRipper: {
 	DisplayName: Shadow Ripper
-	Tooltip: "Your shadow slashes to you after a delay"
+	Tooltip: Your shadow slashes to you after a delay
 }
