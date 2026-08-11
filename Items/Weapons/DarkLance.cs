@@ -19,7 +19,7 @@ namespace DasherClass.Items.Weapons
             Item.useAnimation = 30;
             Item.useStyle = ItemUseStyleID.Shoot;
             Item.knockBack = 6f;
-            Item.value = Item.sellPrice(gold: 1, silver: 50);
+            Item.value = Item.sellPrice(silver: 54);
             Item.rare = ItemRarityID.Orange;
             Item.shootSpeed = 1f;
             Item.shoot = ModContent.ProjectileType<DarkLanceDash>();

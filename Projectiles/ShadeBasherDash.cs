@@ -25,7 +25,6 @@ namespace DasherClass.Projectiles
         public override bool CycleLungingSprite => true;
         public override float LungingMinRadius => 30f;
         public override float LungingMaxRadius => 40f;
-        public override int FrameDelay { get; set; }
 
         public override void SetStaticDefaults()
         {
