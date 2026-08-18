@@ -15,6 +15,7 @@ namespace DasherClass.Projectiles
         public override float PullBackScale => 0.993f;
         public override float MaxPullBackRate => 0.85f;
         public override int OnHitIFrames => 30;
+        public override int frameDelay => 3;
 
         // Radii and counts for the 3 rings: triangle, hexagon, near-circle
         private static readonly float[] RingRadii = { 80f, 160f, 260f };
@@ -24,7 +25,7 @@ namespace DasherClass.Projectiles
 
         public override void SetStaticDefaults()
         {
-            Main.projFrames[Projectile.type] = 1;
+            Main.projFrames[Projectile.type] = 5;
         }
 
         public override void SetDefaults()

@@ -11,6 +11,12 @@ namespace DasherClass.Items.Weapons
     {
         public new string LocalizationCategory => "Items.Weapons";
 
+        public override void SetStaticDefaults()
+        {
+            Main.RegisterItemAnimation(Item.type, new DrawAnimationVertical(12, 5));
+            ItemID.Sets.AnimatesAsSoul[Type] = true;
+        }
+
         public override void SetDefaults()
         {
             Item.width = Item.height = 40;
