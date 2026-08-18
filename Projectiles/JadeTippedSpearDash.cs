@@ -20,9 +20,6 @@ namespace DasherClass.Projectiles
         public override float HoldMaxRadius => 25f;
         public override float LungingMinRadius => 25f;
         public override float LungingMaxRadius => 35f;
-        public override int FrameDelay { get; set; } = 1;
-        public override float ChargingFrameDelay => 1;
-        public override float LungingFrameDelay => 1;
         public int lungeTimer = 0;
         public int plungeTime = 8;
         public bool offsetted = false;

@@ -9,13 +9,16 @@ namespace DasherClass.Projectiles
 {
     public class MoltenMantleDash : ShieldWeaponProjectile
     {
-        public override float ChargeTime => 26f;
-        public override float LungeSpeed => 15f;
-        public override float DashTime => 30f;
+        public override float ChargeTime => 50f;
+        public override float LungeSpeed => 16f;
+        public override float DashTime => 50f;
         public override float PullBackScale => 0.993f;
         public override float MaxPullBackRate => 0.85f;
         public override int OnHitIFrames => 30;
-        public override int frameDelay => 3;
+        public override int ChargingFrameDelay => 6;
+        public override int LungingFrameDelay => 3;
+        public override bool CycleChargingSprite => true;
+        public override bool CycleLungingSprite => false;
 
         // Radii and counts for the 3 rings: triangle, hexagon, near-circle
         private static readonly float[] RingRadii = { 80f, 160f, 260f };

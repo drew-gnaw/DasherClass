@@ -22,9 +22,8 @@ namespace DasherClass.Projectiles
         public override float HoldMaxRadius => 100f;
         public override float LungingMinRadius => 80f;
         public override float LungingMaxRadius => 100f;
-        public override int FrameDelay {get; set;} = 2;
-        public override float ChargingFrameDelay => 2f;
-        public override float LungingFrameDelay => 2f;
+        public override int ChargingFrameDelay => 2;
+        public override int LungingFrameDelay => 2;
 
         public bool crystalCharged = false;
         public int voidClawIndex = -1;
@@ -94,7 +93,6 @@ namespace DasherClass.Projectiles
                     Projectile.Kill();
                 }
             }
-            FrameDelay = FrameDelayHandler();
             if (voidCrystalIndex == -1)
             {
                 voidCrystalIndex = Projectile.NewProjectile(Projectile.GetSource_FromThis(), Owner.Center + new Vector2(-10, -48), Projectile.velocity * 0, ModContent.ProjectileType<VoidCrystal>(), 0, 0, Projectile.owner);
