@@ -18,15 +18,15 @@ namespace DasherClass.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.width = 20;
-            Projectile.height = 20;
+            Projectile.scale = 0.25f;
+            Projectile.width = Projectile.height = (int)(Projectile.scale * 50);
             Projectile.friendly = true;
             Projectile.penetrate = -1;
             Projectile.tileCollide = true;
             Projectile.DamageType = DasherDamageClass.Instance;
-            Projectile.timeLeft = 360;
+            Projectile.timeLeft = 250;
             Projectile.usesLocalNPCImmunity = true;
-            Projectile.localNPCHitCooldown = 20;
+            Projectile.localNPCHitCooldown = 50;
         }
 
         public override void OnSpawn(IEntitySource source)

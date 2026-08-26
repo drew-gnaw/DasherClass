@@ -19,8 +19,8 @@ namespace DasherClass.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.width = 44;
-            Projectile.height = 44;
+            Projectile.scale = 1f;
+            Projectile.width = Projectile.height = (int)(Projectile.scale * 100);
             Projectile.friendly = true;
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;

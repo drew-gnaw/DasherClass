@@ -21,8 +21,8 @@ namespace DasherClass.Projectiles
         public override bool CycleLungingSprite => false;
 
         // Radii and counts for the 3 rings: triangle, hexagon, near-circle
-        private static readonly float[] RingRadii = { 80f, 160f, 260f };
-        private static readonly int[] RingCounts = { 3, 6, 12 };
+        private static readonly float[] RingRadii = { 50f, 70f, 120f };
+        private static readonly int[] RingCounts = { 5, 8, 16 };
 
         private int _spawnedRingCount = 0;
 
@@ -33,7 +33,7 @@ namespace DasherClass.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.scale = 0.8f;
+            Projectile.scale = 0.5f;
             Projectile.width = (int)(Projectile.scale * 14);
             Projectile.height = (int)(Projectile.scale * 45);
             Projectile.friendly = true;

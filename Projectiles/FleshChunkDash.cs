@@ -26,7 +26,7 @@ namespace DasherClass.Projectiles
 
         public override void SetDefaults()
         {
-            Projectile.scale = 0.8f;
+            Projectile.scale = 0.5f;
             Projectile.width = (int)(Projectile.scale * 14);
             Projectile.height = (int)(Projectile.scale * 45);
             Projectile.friendly = true;
@@ -47,7 +47,7 @@ namespace DasherClass.Projectiles
             if (!isMidlunge && Owner.controlUseItem && Main.myPlayer == Projectile.owner)
             {
                 int targetWave = (int)(currentChargeTime / (ChargeTime / 4f));
-                while (_spawnedWaveCount < targetWave && _spawnedWaveCount < 4)
+                while (_spawnedWaveCount < targetWave && _spawnedWaveCount < 2)
                 {
                     SpawnChargingBalls();
                     _spawnedWaveCount++;
@@ -64,7 +64,7 @@ namespace DasherClass.Projectiles
                 return;
 
             Vector2 aim = (Main.MouseWorld - Owner.Center).SafeNormalize(Vector2.UnitX * Owner.direction);
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 2; i++)
             {
                 float spread = MathHelper.ToRadians(MathHelper.Lerp(-30f, 30f, i / 3f));
                 Vector2 ballVelocity = aim.RotatedBy(spread) * (LungeSpeed * 0.7f);
