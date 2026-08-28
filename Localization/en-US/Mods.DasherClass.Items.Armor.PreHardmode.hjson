@@ -13,3 +13,18 @@ VikingLeggings: {
 	DisplayName: Viking Leggings
 	Tooltip: Increase dashing damage by 3%
 }
+
+PulsarBreastplate: {
+	DisplayName: Pulsar Breastplate
+	Tooltip: ""
+}
+
+PulsarHelmet: {
+	DisplayName: Pulsar Helmet
+	Tooltip: ""
+}
+
+PulsarLeggings: {
+	DisplayName: Pulsar Leggings
+	Tooltip: ""
+}

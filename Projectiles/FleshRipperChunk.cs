@@ -9,13 +9,13 @@ namespace DasherClass.Projectiles
     {
         public override void SetDefaults()
         {
-            Projectile.width = Projectile.height = 10;
+            Projectile.scale = 0.3f;
+            Projectile.width = Projectile.height = (int)(Projectile.scale * 100);
             Projectile.friendly = true;
             Projectile.penetrate = 3;
             Projectile.timeLeft = 1000;
             Projectile.tileCollide = true;
             Projectile.ignoreWater = false;
-            Projectile.scale = 0.6f;
         }
 
         public override void AI()

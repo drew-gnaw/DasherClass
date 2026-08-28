@@ -47,3 +47,23 @@ ShadowRipper: {
 	DisplayName: Shadow Ripper
 	Tooltip: Your shadow slashes to you after a delay
 }
+
+FleshChunk: {
+	DisplayName: Flesh Chunk
+	Tooltip:
+		'''
+		Charging hurls flesh in all directions
+
+		Releasing fully charged launches 4 additional chunks
+		'''
+}
+
+MoltenMantle: {
+	DisplayName: Molten Mantle
+	Tooltip:
+		'''
+		Charging summons rings of molten explosions around you
+
+		First a triangle, then a hexagon, then a full circle
+		'''
+}
