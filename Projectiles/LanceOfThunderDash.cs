@@ -337,26 +337,13 @@ namespace DasherClass.Projectiles
                 return false;
             }
 
-            // Draw the lance projectile
-            Texture2D punchTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
-            Rectangle frame = punchTexture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
-            Vector2 origin = frame.Size() * 0.5f;
-            SpriteEffects directionEffect;
-            if (Owner.direction == 1)
-            {
-                directionEffect = SpriteEffects.FlipVertically;
-            }
-            else
-            {
-                directionEffect = SpriteEffects.None;
-            }
-            Main.EntitySpriteDraw(punchTexture, Projectile.Center - Main.screenPosition, frame, lightColor, Projectile.rotation, origin, Projectile.scale, directionEffect, 0);
-
             // Draw charging glow effect ON TOP of the sprite
             if (!isMidlunge && currentChargeTime > 0)
             {
                 DrawChargingGlow();
             }
+
+            base.PreDraw(ref lightColor);
 
             return false;
         }

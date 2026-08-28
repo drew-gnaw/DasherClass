@@ -85,23 +85,6 @@ namespace DasherClass.Projectiles
             int proj = Projectile.NewProjectile(Projectile.GetSource_OnHit(target), target.Center, Vector2.Zero, ModContent.ProjectileType<ShadeBasherSlash>(), (int)(Projectile.damage * 1.5f), 0f, Projectile.owner, rotation);
         }
 
-        // Manual drawing is used to correct the origin of the projectile when drawn.
-        public override bool PreDraw(ref Color lightColor)
-        {
-            Texture2D punchTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
-            Rectangle frame = punchTexture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
-            Vector2 origin = frame.Size() * 0.5f;
-            SpriteEffects directionEffect;
-            if (Owner.direction == 1)
-            {
-                directionEffect = SpriteEffects.FlipVertically;
-            } else
-            {
-                directionEffect = SpriteEffects.None;
-            }
-            Main.EntitySpriteDraw(punchTexture, Projectile.Center - Main.screenPosition, frame, lightColor, Projectile.rotation, origin, Projectile.scale, directionEffect, 0);
-            return false;
-        }
         #endregion
     }
 }

@@ -196,39 +196,40 @@ namespace DasherClass.Projectiles
 
         public override bool PreDraw(ref Color lightColor)
         {
-            Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
-            Rectangle frame = texture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
-            Vector2 origin = frame.Size() * 0.5f;
-            SpriteEffects effects;
+            bool result = base.PreDraw(ref lightColor);
 
-            float drawRotation = Projectile.rotation;
-            
-            if(!Main.mouseRight)
+            // Draw glow overlay when not in right-click mode
+            if (!Main.mouseRight)
             {
-                
+                Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
+                Rectangle frame = texture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
+                Vector2 origin = frame.Size() * 0.5f;
+                Vector2 drawPos = Projectile.Center - Main.screenPosition;
 
-                if (Owner.direction == 1)
-                {
-                    effects = SpriteEffects.FlipVertically;
-                    drawRotation += MathHelper.PiOver4;
-                }
-                else
-                {
-                    effects = SpriteEffects.None;
-                    drawRotation -= MathHelper.PiOver4;
-                }
-
-            } else {
-                effects = SpriteEffects.None;
+                Color glowColor = new Color(40, 130, 85, 0) * 0.5f;
+                Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, GetDrawRotation(), origin, Projectile.scale, GetSpriteEffects(), 0);
             }
-            Vector2 drawPos = Projectile.Center - Main.screenPosition;
-            
-            // Draw base sprite
-            Main.EntitySpriteDraw(texture, drawPos, frame, lightColor, drawRotation, origin, Projectile.scale, effects, 0);
+            return result;
+        }
 
-            Color glowColor = new Color(40, 130, 85, 0) * 0.5f;
-            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, drawRotation, origin, Projectile.scale * 1.0f, effects, 0);
-            return false;
+        protected override SpriteEffects GetSpriteEffects()
+        {
+            if (Main.mouseRight)
+                return SpriteEffects.None;
+            return base.GetSpriteEffects();
+        }
+
+        protected override float GetDrawRotation()
+        {
+            if (Main.mouseRight)
+                return Projectile.rotation;
+
+            float rotation = Projectile.rotation;
+            if (Owner.direction == 1)
+                rotation += MathHelper.PiOver4;
+            else
+                rotation -= MathHelper.PiOver4;
+            return rotation;
         }
     }
 }

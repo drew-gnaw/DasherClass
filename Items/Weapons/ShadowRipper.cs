@@ -7,7 +7,7 @@ using Terraria.ModLoader;
 
 namespace DasherClass.Items.Weapons
 {
-    public class FleshRipper : ModItem, ILocalizedModType
+    public class ShadowRipper : ModItem, ILocalizedModType
     {
         public new string LocalizationCategory => "Items.Weapons";
 
@@ -26,7 +26,7 @@ namespace DasherClass.Items.Weapons
             Item.UseSound = SoundID.Item1;
             Item.autoReuse = true;
             Item.value = Item.buyPrice(gold: 10);
-            Item.shoot = ModContent.ProjectileType<FleshRipperDash>();
+            Item.shoot = ModContent.ProjectileType<ShadowRipperDash>();
             Item.shootSpeed = 1f;
             Item.rare = ItemRarityID.Blue;
         }
@@ -44,8 +44,8 @@ namespace DasherClass.Items.Weapons
 		public override void AddRecipes()
 		{
 			Recipe recipe = CreateRecipe();
-			recipe.AddIngredient(ItemID.CrimtaneBar, 14);
-            recipe.AddIngredient(ItemID.TissueSample, 8);
+			recipe.AddIngredient(ItemID.DemoniteBar, 14);
+            recipe.AddIngredient(ItemID.ShadowScale, 8);
 			recipe.AddTile(TileID.Anvils);
 			recipe.Register();
 		}

@@ -21,6 +21,8 @@ ShadeBasherDash.DisplayName: Shade Basher Dash
 ShadeBasherSlash.DisplayName: Shade Basher Slash
 FleshRipperDash.DisplayName: Flesh Ripper Dash
 FleshRipperChunk.DisplayName: Flesh Ripper Chunk
+ShadowRipperDash.DisplayName: Shadow Ripper Dash
+ShadowRipperShadow.DisplayName: Shadow Ripper Shadow
 FleshChunkDash.DisplayName: Flesh Chunk Dash
 FleshChunkBall.DisplayName: Flesh Chunk Ball
 MoltenMantleDash.DisplayName: Molten Mantle Dash

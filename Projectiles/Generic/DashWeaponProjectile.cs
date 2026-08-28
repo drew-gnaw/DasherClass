@@ -1,5 +1,6 @@
 using DasherClass.Items.Weapons;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ModLoader;
 using Terraria.ID;
@@ -243,4 +244,21 @@ public abstract class DashWeaponProjectile : ModProjectile, ILocalizedModType
             float radius = MathHelper.Lerp(minRadius, maxRadius, t);
             Projectile.Center += aimDirection * radius;
         }
+
+        public override bool PreDraw(ref Color lightColor)
+        {
+            Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
+            Rectangle frame = texture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
+            Vector2 origin = frame.Size() * 0.5f;
+
+            float drawRotation = GetDrawRotation();
+            SpriteEffects effects = GetSpriteEffects();
+
+            Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, frame, lightColor, drawRotation, origin, Projectile.scale, effects, 0);
+            return false;
+        }
+
+        protected virtual float GetDrawRotation() => Projectile.rotation;
+
+        protected virtual SpriteEffects GetSpriteEffects() => Owner.direction == 1 ? SpriteEffects.FlipVertically : SpriteEffects.None;
 }

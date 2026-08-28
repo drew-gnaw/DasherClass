@@ -116,33 +116,18 @@ namespace DasherClass.Projectiles
 
         public override bool PreDraw(ref Color lightColor)
         {
+            bool result = base.PreDraw(ref lightColor);
+
             Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
             Rectangle frame = texture.Frame(1, Main.projFrames[Projectile.type], 0, Projectile.frame);
             Vector2 origin = frame.Size() * 0.5f;
-            SpriteEffects effects;
-            float drawRotation = Projectile.rotation;
-
-            if (Owner.direction == 1)
-            {
-                effects = SpriteEffects.FlipVertically;
-                drawRotation += MathHelper.PiOver4;
-            }
-            else
-            {
-                effects = SpriteEffects.None;
-                drawRotation -= MathHelper.PiOver4;
-            }
-
             Vector2 drawPos = Projectile.Center - Main.screenPosition;
-            
-            // Draw base sprite
-            Main.EntitySpriteDraw(texture, drawPos, frame, lightColor, drawRotation, origin, Projectile.scale, effects, 0);
 
             // Draw dark purple glow
             Color glowColor = new Color(120, 50, 200, 0) * 0.6f;
-            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, drawRotation, origin, Projectile.scale * 1.1f, effects, 0);
+            Main.EntitySpriteDraw(texture, drawPos, frame, glowColor, GetDrawRotation(), origin, Projectile.scale * 1.1f, GetSpriteEffects(), 0);
 
-            return false;
+            return result;
         }
     }
 }
